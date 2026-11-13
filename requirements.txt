@@ -1,0 +1,6 @@
+# Python >=3.10. Yalnızca Faz 1 keşif ve notebook doğrulama bağımlılıkları.
+Pillow>=10.4,<13
+matplotlib>=3.8,<4
+nbformat>=5.10,<6
+nbclient>=0.10,<1
+ipykernel>=6.29,<8
