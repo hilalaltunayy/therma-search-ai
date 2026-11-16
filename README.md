@@ -71,6 +71,19 @@ therma-search-ai/
 
 Ayrıntılı kaynak/sürüm durumu ve WiSARD küçük örnek seçeneği: [docs/dataset_sources.md](docs/dataset_sources.md). Koordinat, sınıf sayımı ve metodoloji kararları: [docs/research_decisions.md](docs/research_decisions.md).
 
+## Drive arşiviyle otomatik gerçek veri denetimi (Notebook 02)
+
+[02_hit_uav_real_audit.ipynb](notebooks/02_hit_uav_real_audit.ipynb) mevcut ZIP'i **indirmeden ve tamamen çıkarmadan** okur. Kullanıcının Colab'da doğruladığı `annotation`, `filename`, piksel `xywh` ve 0–4 sınıf eşlemesi için ayrı HIT-UAV adaptörü kullanır. Notebook 01 ve genel COCO/VOC okuyucuları korunmuştur.
+
+1. [Notebook 02'yi Colab'da açın](https://colab.research.google.com/github/hilalaltunayy/therma-search-ai/blob/feature/hit-uav-real-audit/notebooks/02_hit_uav_real_audit.ipynb) ve CPU çalışma zamanında hücreleri sırayla çalıştırın. Kod revizyonu notebook içinde sabitlenir; rapora gerçek commit yazılır.
+2. İlk hücre public kod deposunu hazırlar ve yalnızca `requirements-colab.txt` paketlerini `--no-deps` ile kontrol eder. **Ana requirements.txt'yi Colab'da kurmayın:** bu hafif yol ipykernel/jupyter-client paketlerini değiştirmez; mevcut Pillow 11.3.0 ve Matplotlib 3.10.0 aralıklarla uyumludur.
+3. Drive bağlantısına izin verin. Varsayılan arşiv: `/content/drive/MyDrive/ThermaSearchAI/datasets/hit_uav_v1.2.1.zip`. Yolunuz aynıysa ek ayar gerekmez. Mevcut ZIP bulunamazsa indirme yerine açık hata verilir.
+4. Kalıcı çıktılar `/content/drive/MyDrive/ThermaSearchAI/reports/hit_uav/run_.../` içine otomatik kaydedilir: sınıf ve Person boyut grafikleri, varsayılan üç kutulu örnek PNG, split CSV'si, kalite JSON'u ve sürüm/tarih/commit/yapılandırma metadata'sı. Önceki raporlar korunur; tüm görüntüler yeniden kaydedilmez.
+
+Önceki kullanıcı sayımları train **2029/8533/17628**, val **290/1168/2460**, test **579/2611/4811** (görüntü/Person/nesne) yalnızca karşılaştırma referansıdır. Notebook bunları yeniden hesaplar, uyuşmazlığı gösterir. Yaklaşık 12×19 medyanı sonuca kopyalanmaz. DontCare korunur. Ortak dosya adı kontrolü yakın kare/aynı uçuş sızıntısını kanıtlamaz veya dışlamaz; splitler değişmez.
+
+Bu geliştirme ortamında gerçek Drive arşivi erişilebilir değildir; yeni akış sentetik ZIP ile sınanmıştır. Kullanıcının önceki MD5 doğrulaması metadata'da **kullanıcı beyanı** olarak saklanır; bu çalıştırmada yeniden MD5 hesaplandığı iddia edilmez. Okunan üyelerde ZIP CRC denetlenir. Raporlama ve kapsam ayrıntıları notebook'tadır.
+
 ## Bağımlılıklar
 
 | Doğrudan bağımlılık | Kullanım |
@@ -87,6 +100,6 @@ Testler standart `unittest` kullanır; pytest gerekmez. Aralıklar requirements.
 
 Gerçekten çalıştırılan kontroller ve sonuçları [docs/validation.md](docs/validation.md) içinde kayıtlıdır. Sentetik testler gerçek HIT-UAV doğrulaması değildir.
 
-Zenodo ve WiSARD proje sitesine bu Cloud ortamından erişim politikayla engellendi. Bu nedenle Zenodo v1.2.1 kayıt ID'si/lisansı/checksum'ları ve WiSARD dağıtım sürümü/örnek bağlantısı henüz doğrulanamadı. Görüntü sayıları, çözünürlükler, DontCare ayrıntıları, gerçek etiket şeması ve split üyelikleri yerel veri üzerinde henüz ölçülmedi. Genel COCO/VOC adaptörlerinin gerçek dağıtımla uyumu da doğrulanmayı bekliyor.
+İlk Faz 1 tesliminde Zenodo ve WiSARD proje sitesine bu Cloud ortamından erişim politikayla engellendi. Bu nedenle Zenodo v1.2.1 kayıt ID'si/lisansı/checksum'ları ve WiSARD dağıtım sürümü/örnek bağlantısı henüz doğrulanamadı. Görüntü sayıları, çözünürlükler, DontCare ayrıntıları, gerçek etiket şeması ve split üyelikleri yerel veri üzerinde henüz ölçülmedi. Genel COCO/VOC adaptörlerinin gerçek dağıtımla uyumu da doğrulanmayı bekliyor.
 
-**Bir sonraki adım:** Colab'da resmî v1.2.1 metadata ve lisansını doğrulamak; ardından kullanıcı tarafından sağlanacak veride ham şema, mevcut splitler ve kutu örneklerini incelemek. Eğitimden önce DontCare ve sızıntı/değerlendirme protokolü için kullanıcı onayı alınacaktır.
+**Bir sonraki adım:** Notebook 02 ile mevcut Drive arşivindeki sayımları yeniden üretmek ve kalıcı kalite raporlarını incelemek; lisans/sızıntı incelemesini ayrıca tamamlamak. Eğitimden önce DontCare ve sızıntı/değerlendirme protokolü için kullanıcı onayı alınacaktır.

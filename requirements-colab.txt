@@ -1,0 +1,3 @@
+# Analiz çalışma zamanı: Colab'ın ipykernel/jupyter-client paketlerine dokunmaz.
+Pillow>=10.4,<13
+matplotlib>=3.8,<4

@@ -52,3 +52,9 @@ print(info['label_candidates'][:20])
 ```
 
 Yayıncı checksum yayımlamıyorsa bunu açık yazın. Yerel SHA256 sonradan aynı dosyayı tanımlar; indirme sırasında yayıncıdan eksiksiz geldiğini bağımsız olarak kanıtlamaz. Küçük örnekten tam dağılım veya performans genellemesi yapılmaz. RGB/termal eşler ve aynı uçuş/konum grupları gelecekteki split sızıntısı denetiminde birlikte ele alınır.
+
+## 2026-11-16 · Kullanıcının Colab doğrulaması ve yeni adaptör
+
+Kullanıcı HIT-UAV v1.2.1 arşivini Zenodo **7633134** kaydından indirip MD5 kontrolünü tamamladığını bildirdi. Drive konumu: `/content/drive/MyDrive/ThermaSearchAI/datasets/hit_uav_v1.2.1.zip`. Doğruladığı alanlar: `annotation`, `images[].filename`, sınıflar Person=0/Car=1/Bicycle=2/OtherVehicle=3/DontCare=4; bbox piksel `[xmin,ymin,w,h]`, görüntüler 640×512. Etiketler `normal_json/annotations/{train,val,test}.json`, görüntüler karşılık gelen split dizinlerindedir. ZIP başındaki sürüm kökü otomatik keşfedilir.
+
+Yeni adaptör görüntü ID'si ve annotation `image_id`/`category_id` ilişkilerini denetler; şema hatasında durur, satır hatalarını kalite raporuna yazar. Bu bilgi kullanıcının gerçek veri incelemesine dayanır; geliştirme ortamında gerçek arşiv yeniden okunmadı. Önceki 2029/290/579 görüntü, 8533/1168/2611 Person ve 17628/2460/4811 nesne sayımları yalnızca karşılaştırma referansıdır. Yeni notebook bunları yeniden hesaplayacaktır. Sürüm/MD5 kaynak bilgisi kullanıcı beyanı olarak işaretlenir; lisans otomatik olarak kabul edilmez.
