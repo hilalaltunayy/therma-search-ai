@@ -43,3 +43,15 @@ Notebook doğrulama betiği bağımsız kernel kullanır. Son çalıştırmadan 
 - Dosya SHA256 kontrolü yalnızca tam bayt kopyalarını yakalar. Görsel yakınlık, çekim grupları, coğrafi sızıntı ve insan tarafından eksik etiket incelemesi yapılmadı.
 - Python 3.10/3.11 ve gerçek Google Colab çalışma zamanı ayrıca sınanmadı. Gerekli kullanıcı adımları README ve notebook'ta bulunur.
 - Eğitim, YOLO11s/RF-DETR çıkarımı, ağırlık indirmesi veya model değerlendirmesi yapılmadı.
+
+## 2026-11-16 · ZIP tabanlı gerçek denetim akışı
+
+- `python -m unittest discover -s tests -v`: **32 test geçti** (mevcut 17 + yeni 15). Kullanıcının doğruladığı alan adlarıyla sentetik JSON/ZIP; sınıf eşlemesi ve DontCare, xywh, geçersiz/taşan/sınır dışı kutular, kopuk referanslar, yinelenen kayıtlar, kaynak boyutu varsayımının kaydı, ZIP kök keşfi ve güvenliği, dosya/çözünürlük hataları, ortak adlar, medyan/<16 oranı ve kalıcı CSV/JSON/PNG çıktıları sınandı.
+- `python tests/validate_notebook.py`: Notebook 01 verisiz ve sentetik modlarda tekrar geçti; 12 görsel çıktı.
+- `python tests/validate_real_audit_notebook.py`: Notebook 02 şeması ve tüm hücreleri sentetik ZIP'te geçti; 3 split, 5 PNG (iki özet + üç örnek), CSV/kalite JSON/metadata üretimi doğrulandı. Kaynak notebook çıktıları boş tutuldu; yürütülmüş sentetik kopya `outputs/validation/real_audit_synthetic/` içinde saklanır.
+- `python -m compileall -q src tests` ve `git diff --check` çalıştırıldı. Üretilen arşivler/grafikler/raporlar Git dışında tutuldu.
+- Hafif Colab dosyası yalnızca Pillow ve Matplotlib içerir; notebook `--no-deps` ile kurar. Geliştirme ortamında gerçek Colab ipykernel 6.17.1 ortamı veya Drive OAuth denenmedi. Yerel test bootstrap/Drive adımını açıkça atlar; gerçek arşiv/MD5/canlı veri doğrulaması iddia edilmez.
+
+Bu yeni sonuçlar gerçek HIT-UAV sayımları değildir. Kullanıcının bildirdiği gerçek ölçümler yalnızca karşılaştırma için kullanılır. Ortak ad kontrolü yakın kare/aynı uçuş sızıntısını sınamaz. Eğitim veya veri seti indirmesi yapılmadı.
+
+- Sentetik sınıf dağılımı, Person boyut histogramı ve Person/DontCare örnek PNG'si dosyadan açılıp görsel olarak incelendi; başlıklar/eksenler okunabilir ve kutu konumları fixture ile uyumlu. Bu inceleme gerçek termal veri üzerinde yapılmadı.
