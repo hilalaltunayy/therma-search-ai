@@ -75,7 +75,7 @@ Ayrıntılı kaynak/sürüm durumu ve WiSARD küçük örnek seçeneği: [docs/d
 
 [02_hit_uav_real_audit.ipynb](notebooks/02_hit_uav_real_audit.ipynb) mevcut ZIP'i **indirmeden ve tamamen çıkarmadan** okur. Kullanıcının Colab'da doğruladığı `annotation`, `filename`, piksel `xywh` ve 0–4 sınıf eşlemesi için ayrı HIT-UAV adaptörü kullanır. Notebook 01 ve genel COCO/VOC okuyucuları korunmuştur.
 
-1. [Notebook 02'yi Colab'da açın](https://colab.research.google.com/github/hilalaltunayy/therma-search-ai/blob/feature/hit-uav-real-audit/notebooks/02_hit_uav_real_audit.ipynb) ve CPU çalışma zamanında hücreleri sırayla çalıştırın. Kod revizyonu notebook içinde sabitlenir; rapora gerçek commit yazılır.
+1. [Notebook 02'yi Colab'da açın](https://colab.research.google.com/github/hilalaltunayy/therma-search-ai/blob/feature/hit-uav-leakage-review/notebooks/02_hit_uav_real_audit.ipynb) ve CPU çalışma zamanında hücreleri sırayla çalıştırın. Kod revizyonu notebook içinde sabitlenir; rapora gerçek commit yazılır.
 2. İlk hücre public kod deposunu hazırlar ve yalnızca `requirements-colab.txt` paketlerini `--no-deps` ile kontrol eder. **Ana requirements.txt'yi Colab'da kurmayın:** bu hafif yol ipykernel/jupyter-client paketlerini değiştirmez; mevcut Pillow 11.3.0 ve Matplotlib 3.10.0 aralıklarla uyumludur.
 3. Drive bağlantısına izin verin. Varsayılan arşiv: `/content/drive/MyDrive/ThermaSearchAI/datasets/hit_uav_v1.2.1.zip`. Yolunuz aynıysa ek ayar gerekmez. Mevcut ZIP bulunamazsa indirme yerine açık hata verilir.
 4. Kalıcı çıktılar `/content/drive/MyDrive/ThermaSearchAI/reports/hit_uav/run_.../` içine otomatik kaydedilir: sınıf ve Person boyut grafikleri, varsayılan üç kutulu örnek PNG, split CSV'si, kalite JSON'u ve sürüm/tarih/commit/yapılandırma metadata'sı. Önceki raporlar korunur; tüm görüntüler yeniden kaydedilmez.
@@ -83,6 +83,16 @@ Ayrıntılı kaynak/sürüm durumu ve WiSARD küçük örnek seçeneği: [docs/d
 Önceki kullanıcı sayımları train **2029/8533/17628**, val **290/1168/2460**, test **579/2611/4811** (görüntü/Person/nesne) yalnızca karşılaştırma referansıdır. Notebook bunları yeniden hesaplar, uyuşmazlığı gösterir. Yaklaşık 12×19 medyanı sonuca kopyalanmaz. DontCare korunur. Ortak dosya adı kontrolü yakın kare/aynı uçuş sızıntısını kanıtlamaz veya dışlamaz; splitler değişmez.
 
 Bu geliştirme ortamında gerçek Drive arşivi erişilebilir değildir; yeni akış sentetik ZIP ile sınanmıştır. Kullanıcının önceki MD5 doğrulaması metadata'da **kullanıcı beyanı** olarak saklanır; bu çalıştırmada yeniden MD5 hesaplandığı iddia edilmez. Okunan üyelerde ZIP CRC denetlenir. Raporlama ve kapsam ayrıntıları notebook'tadır.
+
+## Notebook 02: etiketsiz görüntüler ve sızıntı denetimi
+
+Notebook 02'nin sonuna **9–11. bölümler** eklendi; Notebook 01 değişmedi. Güncel notebook'u açıp ilk kurulum/Drive/ZIP hücreleriyle mevcut analizi çalıştırın; ardından **9 · yapılandırma**, **10 · tarama/kayıt**, **11 · görsel inceleme** hücrelerini sırayla çalıştırın. Yeni bölümler `src/data/leakage.py` ve `leakage_reports.py` modüllerini kullanır; bootstrap kod referansı bu modülleri içeren sürüme sabitlenir. Yeni notebook'u temiz Colab CPU çalışma zamanında açın.
+
+Sıfır **ham** anotasyonlu görüntüler seçilir; kullanıcının bildirdiği 21/3/8 sayıları yeniden hesaplanıp karşılaştırılır. Her splitin tüm contact sheet sayfaları gösterilir; dosya adları ve `review_id` ile eşleşen `manual_review.csv` dosyasında insan varlığını elle değerlendirin. İnsan kararı alanları boş bırakılır; otomatik negatif kabulü veya etiket değişikliği yapılmaz. DontCare anotasyon sayılır. Hatalı kutudan dolayı boş kalan veya görüntü kaydı eksik olan örnekler ayrı gerekçeyle işaretlenir.
+
+Kaynak ZIP'teki görüntü dosya baytları ve ayrıca doğal mod/boyut/pikseller için SHA256 hesaplanır. **Tam kopya örtüşmeleri**, 64 bit dHash **Hamming ≤4** yakınlık adaylarından ayrı raporlanır. Eşik ve çıktı limitleri 9. bölümde ayarlanır. Tekdüze termal sahneler yanlış benzerlik üretebilir; görsel benzerlik kesin sızıntı değildir. Dosya adı grupları doğrulanmamış hipotezdir; uçuş kimliği değildir. Yakın uçuş karelerini kaçırma olasılığı devam eder.
+
+Yeni paket aynı Drive kökünde `run_leakage_.../` dizinine kaydedilir: contact sheet PNG'leri, manuel CSV, hash envanteri, exact çift CSV/tüm grup JSON'u, near aday CSV'si, en fazla 12 çift görseli, dosya adı hipotezleri ve kapsam/hata/limit/kaynak bilgili özet JSON. Eski raporlar ve kullanıcı kararları korunur. Tüm split-dışı okunabilir çiftler taranır; CSV sınırına ulaşılırsa toplam ve kesilme durumu açıkça kaydedilir. Ayrıntılar: [docs/leakage_review.md](docs/leakage_review.md).
 
 ## Bağımlılıklar
 
