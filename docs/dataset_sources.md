@@ -58,3 +58,9 @@ Yayıncı checksum yayımlamıyorsa bunu açık yazın. Yerel SHA256 sonradan ay
 Kullanıcı HIT-UAV v1.2.1 arşivini Zenodo **7633134** kaydından indirip MD5 kontrolünü tamamladığını bildirdi. Drive konumu: `/content/drive/MyDrive/ThermaSearchAI/datasets/hit_uav_v1.2.1.zip`. Doğruladığı alanlar: `annotation`, `images[].filename`, sınıflar Person=0/Car=1/Bicycle=2/OtherVehicle=3/DontCare=4; bbox piksel `[xmin,ymin,w,h]`, görüntüler 640×512. Etiketler `normal_json/annotations/{train,val,test}.json`, görüntüler karşılık gelen split dizinlerindedir. ZIP başındaki sürüm kökü otomatik keşfedilir.
 
 Yeni adaptör görüntü ID'si ve annotation `image_id`/`category_id` ilişkilerini denetler; şema hatasında durur, satır hatalarını kalite raporuna yazar. Bu bilgi kullanıcının gerçek veri incelemesine dayanır; geliştirme ortamında gerçek arşiv yeniden okunmadı. Önceki 2029/290/579 görüntü, 8533/1168/2611 Person ve 17628/2460/4811 nesne sayımları yalnızca karşılaştırma referansıdır. Yeni notebook bunları yeniden hesaplayacaktır. Sürüm/MD5 kaynak bilgisi kullanıcı beyanı olarak işaretlenir; lisans otomatik olarak kabul edilmez.
+
+## 2026-11-16 · WiSARD kaynak beyanı ve iki aşamalı keşif
+
+Kullanıcı resmî sayfanın Visual Only 26.862, Thermal Only 29.989, diğer alt kümelerden 15.453 eşzamanlı çift, yaklaşık 40,54 GB tam ZIP ve tek uçuştan yaklaşık 971,6 MB multi-modal örnek bildirdiğini doğruladı. Bunlar yerel ölçüm değildir; sayılar toplanmaz. Bu oturumda resmî sayfa erişimi yine 403 verdi. Lisans metni/kapsamı, örnek dağıtım kimliği/sürümü, gerçek dosya ağacı, eşleştirme ve etiket şeması doğrulanmadı.
+
+Notebook 03 indirme yapmadan arşivsiz kaynak planı veya mevcut Drive örneğinin salt okunur envanterini üretir. Eşleştirme/etiket gösterimi kanıt ve açık kullanıcı doğrulaması gerektirir; örnek fixture klasörleri/şeması gerçek WiSARD yapısı olarak sunulmaz. Yöntem, veri güvenliği ve bilimsel sınırlar: [wisard_exploration.md](wisard_exploration.md).
