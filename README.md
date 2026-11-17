@@ -94,6 +94,14 @@ Kaynak ZIP'teki görüntü dosya baytları ve ayrıca doğal mod/boyut/pikseller
 
 Yeni paket aynı Drive kökünde `run_leakage_.../` dizinine kaydedilir: contact sheet PNG'leri, manuel CSV, hash envanteri, exact çift CSV/tüm grup JSON'u, near aday CSV'si, en fazla 12 çift görseli, dosya adı hipotezleri ve kapsam/hata/limit/kaynak bilgili özet JSON. Eski raporlar ve kullanıcı kararları korunur. Tüm split-dışı okunabilir çiftler taranır; CSV sınırına ulaşılırsa toplam ve kesilme durumu açıkça kaydedilir. Ayrıntılar: [docs/leakage_review.md](docs/leakage_review.md).
 
+## WiSARD keşfi (Notebook 03)
+
+[03_wisard_exploration.ipynb](notebooks/03_wisard_exploration.ipynb) iki aşamalıdır: arşiv olmadan kaynak/lisans durumu ve deney planını gösterir; Drive'da mevcut örnek ZIP varsa gerçek dosya ağacı, çözünürlük/mod/kanallar ve ham etiket adaylarını inceler. WiSARD'ın gerçek iç yapısı burada tahmin edilmez. HIT-UAV notebook'ları değişmedi.
+
+[Notebook 03'ü Colab'da açın](https://colab.research.google.com/github/hilalaltunayy/therma-search-ai/blob/feature/wisard-exploration/notebooks/03_wisard_exploration.ipynb); CPU kullanın, hücreleri sırayla çalıştırın ve isterseniz Drive bağlantısına izin verin. Mevcut örneğin gerçek yolunu SAMPLE_ZIP_PATH ile seçin veya gözlenen tek uygun adayı kullanın. İlk çalıştırmada eşleştirme ve etiket kuralları kapalıdır. Gerçek envanter/ham dosyalar ve kaynak kanıtından sonra PairingSpec/LabelSpec'i doldurup kural hücresinden itibaren yeniden çalıştırın. Desteklenmeyen şema dönüştürülmez; RGB/termal çift ve Person kutuları yalnızca onaylı kuralla çizilir.
+
+Raporlar `ThermaSearchAI/reports/wisard/run_wisard_.../` altında CSV/JSON ve sınırlı PNG örnekleri olarak saklanır; önceki dosyalara dokunulmaz. Örnek tek uçuş beyanına sahiptir: rastgele kare bölme yakın kare sızıntısı riski taşır; yeni train/val/test oluşturulmaz. Tam arşiv veya 971,6 MB örnek otomatik indirilmez; örnek indirmesi de önceden kullanıcı onayı gerektirir. Veri lisansı metni/kapsamı, gerçek sürüm ve şema doğrulanmayı bekler. Ayrıntılar: [WiSARD kaynak ve yöntem notları](docs/wisard_exploration.md).
+
 ## Bağımlılıklar
 
 | Doğrudan bağımlılık | Kullanım |
