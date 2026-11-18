@@ -175,3 +175,13 @@ def run_wisard_exploration(output_root, *, archive_path=None, pairing_spec=None,
                    outputs=[{'file': p.name, 'bytes': p.stat().st_size, 'sha256': file_digest(p)} for p in sorted(output.iterdir()) if p.name != 'wisard_summary.json'])
     _json(output / 'wisard_summary.json', summary)
     return output, summary
+
+
+def run_wisard_sample_analysis(output_root, *, archive_path, code_revision, progress=print):
+    """Bilinen MtErie örneği için tek çalıştırma API’si; genel keşif kapıları korunur.
+
+    Ayrı adaptör bilinmeyen ZIP’te yalnızca envanter/tanılama üretir. Lazy import,
+    eski genel rapor API’sini ve yalnızca kaynak planı kullananları etkilemez.
+    """
+    from .wisard_sample_reports import run_wisard_sample_analysis as run
+    return run(output_root, archive_path=archive_path, code_revision=code_revision, progress=progress)

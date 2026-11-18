@@ -94,13 +94,15 @@ Kaynak ZIP'teki görüntü dosya baytları ve ayrıca doğal mod/boyut/pikseller
 
 Yeni paket aynı Drive kökünde `run_leakage_.../` dizinine kaydedilir: contact sheet PNG'leri, manuel CSV, hash envanteri, exact çift CSV/tüm grup JSON'u, near aday CSV'si, en fazla 12 çift görseli, dosya adı hipotezleri ve kapsam/hata/limit/kaynak bilgili özet JSON. Eski raporlar ve kullanıcı kararları korunur. Tüm split-dışı okunabilir çiftler taranır; CSV sınırına ulaşılırsa toplam ve kesilme durumu açıkça kaydedilir. Ayrıntılar: [docs/leakage_review.md](docs/leakage_review.md).
 
-## WiSARD keşfi (Notebook 03)
+## WiSARD: Tümünü çalıştır (Notebook 03)
 
-[03_wisard_exploration.ipynb](notebooks/03_wisard_exploration.ipynb) iki aşamalıdır: arşiv olmadan kaynak/lisans durumu ve deney planını gösterir; Drive'da mevcut örnek ZIP varsa gerçek dosya ağacı, çözünürlük/mod/kanallar ve ham etiket adaylarını inceler. WiSARD'ın gerçek iç yapısı burada tahmin edilmez. HIT-UAV notebook'ları değişmedi.
+[Notebook 03’ü Colab’da açın](https://colab.research.google.com/github/hilalaltunayy/therma-search-ai/blob/main/notebooks/03_wisard_exploration.ipynb), CPU çalışma zamanında **Çalışma zamanı → Tümünü çalıştır** seçin. İlk Drive bağlantısında Google erişim izni gerekebilir. Hücre, regex, PairingSpec/LabelSpec veya kare numarası girmeniz gerekmez.
 
-[Notebook 03'ü Colab'da açın](https://colab.research.google.com/github/hilalaltunayy/therma-search-ai/blob/feature/wisard-exploration/notebooks/03_wisard_exploration.ipynb); CPU kullanın, hücreleri sırayla çalıştırın ve isterseniz Drive bağlantısına izin verin. Mevcut örneğin gerçek yolunu SAMPLE_ZIP_PATH ile seçin veya gözlenen tek uygun adayı kullanın. İlk çalıştırmada eşleştirme ve etiket kuralları kapalıdır. Gerçek envanter/ham dosyalar ve kaynak kanıtından sonra PairingSpec/LabelSpec'i doldurup kural hücresinden itibaren yeniden çalıştırın. Desteklenmeyen şema dönüştürülmez; RGB/termal çift ve Person kutuları yalnızca onaylı kuralla çizilir.
+Varsayılan mevcut ZIP: `/content/drive/MyDrive/ThermaSearchAI/datasets/WiSARD_Multi_Modal_Sample.zip`. Notebook bilinen MtErie IR/VIS örneğinde bütün görüntü/etiketleri yeniden sayar; bütünlük, sınıflar, boş/eksik etiketler, kutu boyutları, count.txt, iki eşleştirme hipotezi ve modalite içi dHash/SHA benzerliği denetimini çalıştırır. Her hipotezden yeterli aday varsa 10 farklı kare ground-truth kutularıyla kaydedilir. Yeni run klasöründeki CSV/JSON, 200 DPI PNG ve akademik Markdown raporu otomatik olarak `/content/drive/MyDrive/ThermaSearchAI/reports/wisard/run_wisard_.../` altına yazılır. Önceki raporlar korunur.
 
-Raporlar `ThermaSearchAI/reports/wisard/run_wisard_.../` altında CSV/JSON ve sınırlı PNG örnekleri olarak saklanır; önceki dosyalara dokunulmaz. Örnek tek uçuş beyanına sahiptir: rastgele kare bölme yakın kare sızıntısı riski taşır; yeni train/val/test oluşturulmaz. Tam arşiv veya 971,6 MB örnek otomatik indirilmez; örnek indirmesi de önceden kullanıcı onayı gerektirir. Veri lisansı metni/kapsamı, gerçek sürüm ve şema doğrulanmayı bekler. Ayrıntılar: [WiSARD kaynak ve yöntem notları](docs/wisard_exploration.md).
+IR n ↔ VIS n ve IR n ↔ VIS n−1 ayrı raporlanır. Tercih **geçici hipotezdir**; sayı uyumu/EXIF saat adayı fiziksel senkronizasyonu kesinleştirmez. İnsan anotasyonu benzersiz kişi sayısı değildir; IR/VIS sayımları ayrı tutulur. Boş TXT otomatik negatif kabul edilmez. Bilinmeyen ZIP’te etiket/eşleştirme tahmini yapılmadan açık tanılama raporu üretilir. ZIP yoksa indirilmez; hata kaydı yazılır. Eğitim ve rastgele split oluşturulmaz.
+
+Notebook 01/02, HIT-UAV analizleri, veri dosyaları ve eski raporlar korunur. Gerçek WiSARD ZIP’i geliştirme ortamında erişilebilir değildir; doğrulama sentetik fixture ve notebook yürütmesiyle yapılır. [Yöntem ve çıktıların ayrıntıları](docs/wisard_exploration.md) · [Yeni doğrulama kaydı](docs/validation_wisard_one_pass.md).
 
 ## Bağımlılıklar
 
