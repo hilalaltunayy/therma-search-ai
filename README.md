@@ -18,6 +18,36 @@ python tests/validate_notebook.py
 
 Windows etkinleştirme komutu: `.venv\Scripts\activate`. Notebook doğrulayıcı küçük sentetik veriler üretir; veri seti veya model indirmez. Çıktıları Git'e alınmayan `outputs/validation/` altına yazar.
 
+## Web uygulaması (Faz 2, `web/`)
+
+Therma Search AI operasyon arayüzü: Next.js (App Router) + React + TypeScript (strict) + Tailwind CSS v4. Python projesinden bağımsızdır; Node.js **20.9+** gerekir.
+
+```bash
+cd web
+npm ci
+npm run dev        # http://localhost:3000  (Detection Workspace'e yönlenir)
+```
+
+Üretim denemesi ve kontroller:
+
+```bash
+npm run build && npm run start   # üretim derlemesi
+npm run lint
+npm run typecheck
+npm test                         # vitest birim testleri
+```
+
+**Önemli:** YOLO11s modeli ve FastAPI backend'i henüz bağlı değildir. Varsayılan `mock` modunda tarayıcı içi **DEMO / MOCK DATA** servisi çalışır: yüklediğiniz dosya gerçekten önizlenir/oynatılır, ancak kutular ve skorlar **yapay, tohumlu rastgele** değerlerdir ve görüntü içeriğiyle ilgisi yoktur; süreler simülasyondur. Dosyalar hiçbir yere gönderilmez. Gerçek istemci `NEXT_PUBLIC_THERMA_API_MODE=http` ile açılır (`web/.env.example`), ancak sözleşmeyi uygulayan bir backend olmadığı için gerçek sunucuya karşı denenmemiştir.
+
+| Gerçek (çalışır) | Mock / henüz yok |
+| --- | --- |
+| Dosya seçme/sürükleme, tür-boyut doğrulaması, görüntü/video önizleme ve oynatma | Tespit kutuları ve skorlar (yapay) |
+| Eşik filtresi, kutu/etiket/sınıf anahtarları, orijinal/işlenmiş/bölünmüş görünüm | Model çıkarımı, işlem süresi (simülasyon) |
+| İş durumu akışı: hazır, işleniyor, başarılı, hata, iptal (hata mock'ta simüle edilir) | GPS, risk puanı, harita, rota, ekipler (yalnızca "Planlı" kartları) |
+| İstatistik/histogram/zaman çizelgesi hesapları (verilen sonuç üzerinden) | Kalıcı analiz geçmişi, backend sağlık/yetenek bilgisi |
+
+MP4 oynatma tarayıcının H.264 desteğine bağlıdır; çözülemeyen dosya açık hata mesajıyla reddedilir. API taslağı: [docs/api-contract.md](docs/api-contract.md). Tasarım sistemi: [docs/frontend-design-system.md](docs/frontend-design-system.md).
+
 ## Dosya ağacı
 
 ```text
@@ -27,9 +57,12 @@ therma-search-ai/
 ├── CLAUDE.md
 ├── requirements.txt
 ├── .gitignore
+├── web/                     # Faz 2 web uygulaması (Next.js)
 ├── configs/
 │   └── hit_uav.example.json
 ├── docs/
+│   ├── api-contract.md
+│   ├── frontend-design-system.md
 │   ├── dataset_sources.md
 │   ├── research_decisions.md
 │   └── validation.md
