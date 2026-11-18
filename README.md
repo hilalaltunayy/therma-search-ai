@@ -123,3 +123,13 @@ Gerçekten çalıştırılan kontroller ve sonuçları [docs/validation.md](docs
 İlk Faz 1 tesliminde Zenodo ve WiSARD proje sitesine bu Cloud ortamından erişim politikayla engellendi. Bu nedenle Zenodo v1.2.1 kayıt ID'si/lisansı/checksum'ları ve WiSARD dağıtım sürümü/örnek bağlantısı henüz doğrulanamadı. Görüntü sayıları, çözünürlükler, DontCare ayrıntıları, gerçek etiket şeması ve split üyelikleri yerel veri üzerinde henüz ölçülmedi. Genel COCO/VOC adaptörlerinin gerçek dağıtımla uyumu da doğrulanmayı bekliyor.
 
 **Bir sonraki adım:** Notebook 02 ile mevcut Drive arşivindeki sayımları yeniden üretmek ve kalıcı kalite raporlarını incelemek; lisans/sızıntı incelemesini ayrıca tamamlamak. Eğitimden önce DontCare ve sızıntı/değerlendirme protokolü için kullanıcı onayı alınacaktır.
+
+## İlk YOLO11s eğitimi (Notebook 04)
+
+[Notebook 04’ü Colab’da açın](https://colab.research.google.com/github/hilalaltunayy/therma-search-ai/blob/main/notebooks/04_hit_uav_yolo_training.ipynb), **GPU** çalışma zamanı seçip **Tümünü çalıştır** deyin. İlk Drive bağlantı izni gerekebilir. Mevcut `ThermaSearchAI/datasets/hit_uav_v1.2.1.zip` otomatik okunur; veri doğrulanır, Person-only YOLO kopyası hazırlanır, 40 epoch/patience 10 ile YOLO11s eğitilir ve validation ile seçilen `best.pt` ayrı test edilir. GPU yoksa CPU eğitimi başlamaz. Gereken pretrained ağırlık Colab’da indirilir; model/veri sonuçları bu geliştirme tesliminde üretilmiş değildir.
+
+Güvenli başlangıç politikası: sıfır **ham** anotasyonlu ve DontCare içeren görüntüler bütün splitlerden türetilmiş kopyada dışlanır; diğer sınıf kutuları hedef dışı arka plandır. Dışlanan görüntü/Person sayıları ve kalan Person-arka plan örnekleri ayrı raporlanır. Kaynak veriler ve özgün split üyelikleri korunur. Veri/dönüşüm hatası varsa eğitim başlamaz. Sonuçlar filtrelenmiş test alt kümesindeki **exploratory baseline**’dır; bildirilen 1880 dHash adayı nedeniyle bağımsız saha genellemesi iddia edilmez.
+
+Çıktılar `ThermaSearchAI/runs/hit_uav_yolo11s/run_yolo11s_.../` altında Drive’a kaydedilir: best.pt, manifest, train/validation loss/metrikleri, ayrı test mAP ve sabit eşikte Precision/Recall, PR eğrileri, confusion matrix, GT/prediction ve FP/FN örnekleri, süre/GPU/sürüm/parametreler. Ağırlıklar GitHub’a gönderilmez. Notebook 01–03 ve frontend dosyaları değiştirilmez.
+
+[Çalıştırma, veri politikası ve bilimsel kapsam](docs/yolo11s_baseline.md) · [FastAPI/Next.js ortak inference sözleşmesi](docs/inference_api_contract.md) · [Doğrulama kaydı](docs/validation_yolo11s_baseline.md). Eğitim bağımlılığı ayrı `requirements-training-colab.txt` içindedir.
