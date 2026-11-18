@@ -19,6 +19,8 @@ Sentetik GT/prediction, FP örneği ve train/val loss PNG’leri dosyadan açıl
 
 Ultralytics 8.3.228’in PyPI sürümü doğrulandı; yaklaşık 1 MB kaynak wheel’i API incelemesi için indirildi. `YOLO.train/val`, callback zamanlaması, `trainer.args.save_dir`, `best.pt`, sonuç CSV alanları, native metriklerin fitness’i, pretrained asset indirme yolu, Settings anahtarları ve label cache dosyası üretimi kaynak kodundan incelendi. PyTorch/Ultralytics bu ortama kurulmadı; pretrained model indirilmedi. Bu inceleme gerçek GPU entegrasyon testinin yerine geçmez.
 
+Public depodan sabit `20e2ce3897d0ae005b43a37f177d391cf147b34d` yardımcı kod revizyonu ayrı bir yerel dizine clone/fetch/checkout edilerek hafif modül import’ları doğrulandı. Bu kontrol CUDA/pip/model ağırlığı/eğitim adımlarını çalıştırmadı. Notebook bu revizyona sabitlendikten sonra bütün hücrelerin sentetik doğrulaması tekrar geçti.
+
 Notebook 01–03, mevcut HIT-UAV/WiSARD analiz modülleri, veri dosyaları, eski raporlar ve frontend kodu değiştirilmedi. Eğitim bağımlılığı ayrı dosyadadır. Geçici sentetik çıktı/model dosyaları `outputs/validation/yolo_training/` altında ve Git dışında tutulur; kaynak notebook çıktı/sayaçları boştur.
 
 ## Sınanmayanlar ve bilimsel sınırlar
