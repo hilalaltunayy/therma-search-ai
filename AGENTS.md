@@ -18,6 +18,13 @@ Bu dosya Codex ve Claude Code için ortak talimatların ana kaynağıdır.
 ## Faz 1 kapsamı
 Python 3.10+; CPU ile keşif ve birim testleri. Eğitim, model ağırlığı, bulut otomasyonu, Claude API, MCP ve hook kurulumu bu aşamanın dışında.
 
+## Faz 2 — Web uygulaması (`web/`)
+Faz 1 kuralları ve bilimsel güvenlik kuralları aynen geçerlidir. Next.js (App Router) + React + TypeScript (strict) + Tailwind uygulaması `web/` altındadır; Python kodu, notebook'lar, veri/model dosyaları ve Faz 1 testleri bu kapsamda **değiştirilmez**.
+- Frontend/uygulama işi Claude Code tarafında, model eğitimi/veri hazırlığı Codex tarafında yürür; ayrı feature branch'lerde çalışılır, main'e doğrudan push yapılmaz, PR otomatik merge edilmez.
+- Frontend ↔ backend sözleşmesi [docs/api-contract.md](docs/api-contract.md) dosyasındadır; koordinat konvansiyonu ve sınıf eşlemesi değişikliği kullanıcı onayı ister. Tasarım sistemi: [docs/frontend-design-system.md](docs/frontend-design-system.md).
+- Mock/demo veri **her zaman** "DEMO / MOCK DATA" olarak etiketlenir; gerçek model çıktısı, gerçek GPS/risk/operasyon verisi gibi sunulmaz. Backend'de olmayan uç noktalar çalışıyormuş gibi gösterilmez.
+- Web komutları (`web/` içinde): `npm ci`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `npm run dev`.
+
 ## Çalışma komutları
 ```bash
 python -m pip install -r requirements.txt

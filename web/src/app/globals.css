@@ -1,0 +1,131 @@
+@import "tailwindcss";
+
+/*
+ * THERMA SEARCH AI — tasarım token'ları (bkz. docs/frontend-design-system.md)
+ * Tailwind v4 @theme: her --color-* token'ı bg-/text-/border- yardımcı sınıflarını üretir.
+ */
+@theme {
+  /* Yüzeyler: derinlik sırası base < surface < raised < overlay */
+  --color-base: #060a13;
+  --color-surface: #0a111d;
+  --color-raised: #0f1828;
+  --color-overlay: #152136;
+  --color-line: #1c2a40;
+  --color-line-strong: #2a3b57;
+
+  /* Metin (WCAG AA: ink/muted/subtle, surface üzerinde ≥ 4.5:1) */
+  --color-ink: #e8eef8;
+  --color-muted: #9aa9c0;
+  --color-subtle: #8393ab;
+
+  /* Vurgu: cyan = birincil, teal = ikincil/başarı-yakın, electric = bilgi */
+  --color-accent: #22d3ee;
+  --color-accent-strong: #06b6d4;
+  --color-accent-soft: #0b3a4a;
+  --color-teal: #2dd4bf;
+  --color-electric: #4f8cff;
+
+  /* Durum */
+  --color-warn: #f59e0b;
+  --color-warn-soft: #3a2806;
+  --color-danger: #fb5a6e;
+  --color-danger-soft: #3b1019;
+  --color-ok: #34d399;
+  --color-ok-soft: #0a3328;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+
+  --radius-panel: 12px;
+  --shadow-panel: 0 1px 0 0 rgb(255 255 255 / 0.03) inset, 0 8px 24px -12px rgb(0 0 0 / 0.6);
+
+  --animate-rise: rise 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-pulse-dot: pulse-dot 2s ease-in-out infinite;
+  --animate-scan: scan 2.4s linear infinite;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+@keyframes scan {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(100%); }
+}
+@keyframes indeterminate {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(250%); }
+}
+
+:root { color-scheme: dark; }
+
+html, body { height: 100%; }
+body {
+  background:
+    radial-gradient(1200px 500px at 85% -10%, rgb(34 211 238 / 0.06), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgb(79 140 255 / 0.05), transparent 60%),
+    var(--color-base);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+}
+
+.tnum { font-variant-numeric: tabular-nums; }
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::selection { background: rgb(34 211 238 / 0.3); }
+
+/* İnce kaydırma çubukları */
+* { scrollbar-width: thin; scrollbar-color: var(--color-line-strong) transparent; }
+
+/* Aralık (range) girdisi: izleme alanı ve başparmak */
+input[type="range"].range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 20px;
+  background: transparent;
+  cursor: pointer;
+}
+input[type="range"].range::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(to right, var(--color-accent) var(--fill, 0%), var(--color-line-strong) var(--fill, 0%));
+}
+input[type="range"].range::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--color-line-strong);
+}
+input[type="range"].range::-moz-range-progress { height: 4px; border-radius: 999px; background: var(--color-accent); }
+input[type="range"].range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px; height: 16px; margin-top: -6px;
+  border-radius: 999px;
+  background: var(--color-ink);
+  border: 2px solid var(--color-accent);
+  box-shadow: 0 0 0 4px rgb(34 211 238 / 0.12);
+}
+input[type="range"].range::-moz-range-thumb {
+  width: 12px; height: 12px;
+  border-radius: 999px;
+  background: var(--color-ink);
+  border: 2px solid var(--color-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
