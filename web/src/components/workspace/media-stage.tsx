@@ -3,132 +3,212 @@
 import type { RefObject } from "react";
 import { CircleSlash, LoaderCircle, TriangleAlert } from "lucide-react";
 import { useAnalysis } from "@/state/analysis-store";
-import type { Detection } from "@/lib/api/contract";
-import { DemoBadge, Button, ProgressBar, StateView } from "@/components/ui/primitives";
+import { DEFAULT_UPLOAD_LIMITS } from "@/lib/api/contract";
+import { formatTimestamp } from "@/lib/format";
+import { Button, DemoBadge, ProgressBar, StateView } from "@/components/ui/primitives";
 import { UploadDropzone } from "./upload-dropzone";
 import { DetectionOverlay } from "./detection-overlay";
 import { CompareHandle } from "./compare-handle";
 import type { ViewPrefs } from "./view-prefs";
-import { DEFAULT_UPLOAD_LIMITS } from "@/lib/api/contract";
+import type { RankedDetection } from "./ranked";
 
 interface Props {
   videoRef: RefObject<HTMLVideoElement | null>;
   prefs: ViewPrefs;
   onPrefsChange: (p: ViewPrefs) => void;
-  /** Eşik ve sınıf filtresi uygulanmış, geçerli kareye ait tespitler. */
-  visibleDetections: readonly Detection[];
+  /** Eşik ve sınıf filtresi uygulanmış, geçerli kareye ait sıralı tespitler. */
+  items: readonly RankedDetection[];
+  /** Geçerli karede eşikten önceki tespit sayısı (HUD "görünür n / m"). */
+  frameTotal: number;
   selectedId: string | null;
+  hoveredId: string | null;
+  onSelect: (id: string | null) => void;
+  onHover: (id: string | null) => void;
+  timeMs: number;
 }
 
-export function MediaStage({ videoRef, prefs, onPrefsChange, visibleDetections, selectedId }: Props) {
-  const { state, capabilities, selectFile, dismissSelectionError, start, cancel } = useAnalysis();
+/**
+ * Görüntüleme sahnesi. Izgara: üst HUD satırı · kare · alt cetvel/DEMO satırı.
+ * HUD çipleri karenin dışındadır; tespit kutularını hiçbir zaman örtmez.
+ * HUD'daki her değer gerçek veriden gelir (medya boyutu, oynatma zamanı, sonuç sayıları, eşik).
+ */
+export function MediaStage({ videoRef, prefs, onPrefsChange, items, frameTotal, selectedId, hoveredId, onSelect, onHover, timeMs }: Props) {
+  const { state, capabilities, selectFile, dismissSelectionError, start, cancel, threshold } = useAnalysis();
   const { phase, probe, mediaUrl, file, kind, result, job, error, selectionError } = state;
 
   if (phase === "empty" || !probe || !mediaUrl || !file) {
     return (
-      <UploadDropzone
-        limits={capabilities?.limits ?? DEFAULT_UPLOAD_LIMITS}
-        error={selectionError}
-        onDismissError={dismissSelectionError}
-        onFile={selectFile}
-      />
+      <div className="stage h-full min-h-[420px] overflow-hidden rounded-2xl border border-line" style={{ gridTemplateRows: "minmax(0,1fr)" }}>
+        <UploadDropzone
+          limits={capabilities?.limits ?? DEFAULT_UPLOAD_LIMITS}
+          error={selectionError}
+          onDismissError={dismissSelectionError}
+          onFile={selectFile}
+        />
+      </div>
     );
   }
 
   const ratio = probe.width / probe.height;
-  const showOverlay = phase === "succeeded" && result !== null && prefs.mode !== "original" && prefs.showBoxes;
-  const split = phase === "succeeded" && prefs.mode === "split";
+  const succeeded = phase === "succeeded" && result !== null;
+  const split = succeeded && prefs.mode === "split";
+  const showOverlay = succeeded && prefs.mode !== "original" && prefs.showBoxes;
   const isMock = result?.provenance === "mock";
 
   return (
-    <div className="flex min-h-[420px] items-center justify-center bg-black/40 p-2 sm:p-4">
-      <div
-        className="relative overflow-hidden rounded-lg border border-line bg-black"
-        style={{ aspectRatio: `${ratio}`, width: `min(100%, calc(68vh * ${ratio}))` }}
-      >
-        {kind === "video" ? (
-          <video ref={videoRef} src={mediaUrl} muted playsInline preload="auto" className="absolute inset-0 size-full" aria-label={`Yüklenen video: ${file.name}`} />
-        ) : (
-          // eslint-disable-next-line @next/next/no-img-element -- blob URL; next/image uygun değil
-          <img src={mediaUrl} alt={`Yüklenen termal görüntü: ${file.name}`} className="absolute inset-0 size-full" draggable={false} />
-        )}
-
-        {showOverlay && result && (
-          <div className="absolute inset-0" style={split ? { clipPath: `inset(0 0 0 ${prefs.splitPct}%)` } : undefined}>
-            <DetectionOverlay detections={visibleDetections} media={result.media} showLabels={prefs.showLabels} selectedId={selectedId} />
+    <div
+      className="stage h-full overflow-hidden rounded-2xl border border-line"
+      style={{ ["--ratio" as string]: String(ratio) }}
+      aria-label="Görüntüleme alanı"
+    >
+      {/* Üst HUD satırı */}
+      <div className="flex min-w-0 items-center justify-between gap-2 px-3 lg:pl-[44px] lg:pr-4">
+        <div className="flex min-w-0 items-center gap-1.5">
+          <span className="hud-chip">
+            <em>KAYNAK</em> {probe.width}×{probe.height} px
+          </span>
+          {kind === "video" && (
+            <span className="hud-chip">
+              <em>t</em> <span className="text-orange-text">{formatTimestamp(timeMs)}</span>
+            </span>
+          )}
+        </div>
+        {succeeded && (
+          <div className="flex items-center gap-1.5">
+            <span className="hud-chip" title="Geçerli karede eşik üstü / toplam tespit">
+              <em className="hidden sm:inline">KAREDE</em> {items.length} / {frameTotal}
+            </span>
+            <span className="hud-chip hidden sm:inline-flex">
+              <em>EŞİK</em> ≥ {threshold.toFixed(2)}
+            </span>
           </div>
         )}
+      </div>
 
-        {split && <CompareHandle value={prefs.splitPct} onChange={(splitPct) => onPrefsChange({ ...prefs, splitPct })} />}
+      {/* Kare */}
+      <div className="stage-frame-cell">
+        <div className="stage-frame">
+          <span className="bracket tl" />
+          <span className="bracket tr" />
+          <span className="bracket bl" />
+          <span className="bracket br" />
 
-        {phase === "succeeded" && (
-          <div className="pointer-events-none absolute left-2 top-2 flex flex-wrap gap-1.5">
-            {split && <span className="rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium tracking-wide text-white">ORİJİNAL</span>}
-            {split && <span className="rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium tracking-wide text-accent">İŞLENMİŞ</span>}
-            {isMock && <DemoBadge />}
+          {/* Cetvel: gerçek medya piksel boyutu (koordinat okumasına yardımcı) */}
+          <div aria-hidden className="pointer-events-none absolute -left-[40px] inset-y-0 hidden w-8 flex-col justify-between text-right font-mono text-[11px] leading-none text-subtle lg:flex">
+            <span>0</span>
+            <span>{Math.round(probe.height / 2)}</span>
+            <span>{probe.height}</span>
           </div>
-        )}
-
-        {/* --- Durum katmanları --- */}
-        {phase === "ready" && (
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-3 text-xs text-muted">
-            Önizleme · analiz henüz başlatılmadı. Sağ paneldeki <strong className="text-ink">Analizi başlat</strong> düğmesini kullanın.
+          <div aria-hidden className="pointer-events-none absolute inset-x-0 top-[calc(100%+6px)] hidden justify-between font-mono text-[11px] leading-none text-subtle lg:flex">
+            <span>0</span>
+            <span>{Math.round(probe.width / 2)}</span>
+            <span>{probe.width}</span>
           </div>
-        )}
 
-        {(phase === "submitting" || phase === "processing") && (
-          <div role="status" aria-live="polite" className="absolute inset-0 grid place-items-center bg-base/55 backdrop-blur-[1px]">
-            <div aria-hidden className="absolute inset-x-0 h-1/3 animate-scan bg-gradient-to-b from-transparent via-accent/15 to-transparent" />
-            <div className="w-72 max-w-[85%] rounded-xl border border-line-strong bg-surface/95 p-4 shadow-xl">
-              <div className="flex items-center gap-2 text-[13px] font-medium text-ink">
-                <LoaderCircle className="size-4 animate-spin text-accent" aria-hidden />
-                {phase === "submitting" ? "İş oluşturuluyor…" : job?.status === "queued" ? "Kuyrukta…" : "İşleniyor…"}
-              </div>
-              <div className="mt-3">
-                <ProgressBar label="Analiz ilerlemesi" ratio={phase === "submitting" ? null : (job?.progress.ratio ?? null)} />
-              </div>
-              <div className="tnum mt-2 flex justify-between text-[11px] text-subtle">
-                <span>
-                  {job?.progress.totalFrames != null ? `${job.progress.processedFrames}/${job.progress.totalFrames} kare` : "—"}
-                </span>
-                <span>{job?.progress.ratio != null ? `%${Math.round(job.progress.ratio * 100)}` : ""}</span>
-              </div>
-              {job?.provenance === "mock" && <p className="mt-2 text-[11px] text-warn">DEMO: simüle edilmiş ilerleme, gerçek çıkarım değil.</p>}
-              <Button variant="ghost" size="sm" className="mt-3 w-full" onClick={() => void cancel()}>
-                İptal et
-              </Button>
+          <div className="absolute inset-0 overflow-hidden rounded-[3px] bg-black">
+            {kind === "video" ? (
+              <video ref={videoRef} src={mediaUrl} muted playsInline preload="auto" className="absolute inset-0 size-full" aria-label={`Yüklenen video: ${file.name}`} />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element -- blob URL; next/image uygun değil
+              <img src={mediaUrl} alt={`Yüklenen termal görüntü: ${file.name}`} className="absolute inset-0 size-full" draggable={false} />
+            )}
+          </div>
+
+          {showOverlay && result && (
+            <div className="absolute inset-0" style={split ? { clipPath: `inset(-40px -40px -40px ${prefs.splitPct}%)` } : undefined}>
+              <DetectionOverlay
+                items={items}
+                media={result.media}
+                showLabels={prefs.showLabels}
+                selectedId={selectedId}
+                hoveredId={hoveredId}
+                onSelect={onSelect}
+                onHover={onHover}
+                interactive={!split}
+              />
             </div>
-          </div>
-        )}
+          )}
 
-        {phase === "failed" && (
-          <div className="absolute inset-0 grid place-items-center bg-base/75 backdrop-blur-[2px]">
-            <StateView
-              role="alert"
-              tone="danger"
-              icon={<TriangleAlert className="size-5" aria-hidden />}
-              title="Analiz tamamlanamadı"
-              description={
-                <>
-                  {error?.message ?? "Bilinmeyen hata."}
-                  {error && <span className="mt-1 block font-mono text-[11px] text-subtle">kod: {error.code}</span>}
-                </>
-              }
-              action={error?.retryable === false ? undefined : <Button variant="primary" onClick={() => void start()}>Yeniden dene</Button>}
-            />
-          </div>
-        )}
+          {split && (
+            <>
+              <CompareHandle value={prefs.splitPct} onChange={(splitPct) => onPrefsChange({ ...prefs, splitPct })} />
+              <span className="hud-chip pointer-events-none absolute bottom-2 left-2 z-30">ORİJİNAL</span>
+              <span className="hud-chip pointer-events-none absolute bottom-2 right-2 z-30 text-cyan">TESPİTLİ</span>
+            </>
+          )}
 
-        {phase === "canceled" && (
-          <div className="absolute inset-0 grid place-items-center bg-base/75 backdrop-blur-[2px]">
-            <StateView
-              role="status"
-              icon={<CircleSlash className="size-5" aria-hidden />}
-              title="Analiz iptal edildi"
-              description="Dosya hâlâ yüklü. İsterseniz analizi yeniden başlatabilirsiniz."
-              action={<Button variant="primary" onClick={() => void start()}>Yeniden başlat</Button>}
-            />
-          </div>
+          {(phase === "submitting" || phase === "processing") && (
+            <div role="status" aria-live="polite" className="absolute inset-0 z-40 grid place-items-center overflow-hidden bg-base/45">
+              <div aria-hidden className="animate-scan absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-transparent via-cyan/15 to-transparent" />
+              <div className="glass glass-edge w-80 max-w-[88%] rounded-2xl p-5">
+                <p className="flex items-center gap-2 text-[15px] font-semibold text-ink">
+                  <LoaderCircle className="size-5 animate-spin text-cyan" aria-hidden />
+                  {phase === "submitting" ? "İş oluşturuluyor…" : job?.status === "queued" ? "Kuyrukta…" : "Analiz ediliyor…"}
+                </p>
+                <div className="mt-4">
+                  <ProgressBar label="Analiz ilerlemesi" ratio={phase === "submitting" ? null : (job?.progress.ratio ?? null)} />
+                </div>
+                <p className="tnum mt-2 flex justify-between font-mono text-[13px] text-muted">
+                  <span>{job?.progress.totalFrames != null ? `${job.progress.processedFrames} / ${job.progress.totalFrames} kare` : "—"}</span>
+                  <span>{job?.progress.ratio != null ? `%${Math.round(job.progress.ratio * 100)}` : ""}</span>
+                </p>
+                {job?.provenance === "mock" && <p className="mt-2 text-[13px] text-amber">DEMO: simüle edilmiş ilerleme; gerçek çıkarım değil.</p>}
+                <Button variant="secondary" size="sm" className="mt-4 w-full" onClick={() => void cancel()}>
+                  İptal et
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {phase === "failed" && (
+            <div className="absolute inset-0 z-40 grid place-items-center bg-base/70 backdrop-blur-[2px]">
+              <div className="glass rounded-2xl">
+                <StateView
+                  role="alert"
+                  tone="danger"
+                  icon={<TriangleAlert className="size-6" aria-hidden />}
+                  title="Analiz tamamlanamadı"
+                  description={
+                    <>
+                      {error?.message ?? "Bilinmeyen hata."}
+                      {error && <span className="mt-1 block font-mono text-[13px] text-subtle">kod: {error.code}</span>}
+                    </>
+                  }
+                  action={error?.retryable === false ? undefined : <Button variant="primary" onClick={() => void start()}>Yeniden dene</Button>}
+                />
+              </div>
+            </div>
+          )}
+
+          {phase === "canceled" && (
+            <div className="absolute inset-0 z-40 grid place-items-center bg-base/70 backdrop-blur-[2px]">
+              <div className="glass rounded-2xl">
+                <StateView
+                  role="status"
+                  tone="amber"
+                  icon={<CircleSlash className="size-6" aria-hidden />}
+                  title="Analiz iptal edildi"
+                  description="Dosya hâlâ yüklü. Analizi yeniden başlatabilirsiniz."
+                  action={<Button variant="primary" onClick={() => void start()}>Yeniden başlat</Button>}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Alt satır: DEMO etiketi / önizleme durumu (karenin dışında) */}
+      <div className="flex items-end justify-between gap-2 px-3 pb-2 lg:pl-[44px] lg:pr-4">
+        {succeeded ? (
+          isMock ? (
+            <DemoBadge label="DEMO / MOCK — kutular yapay" />
+          ) : (
+            <span className="hud-chip"><em>MODEL</em> {result.model.name}</span>
+          )
+        ) : phase === "ready" ? (
+          <span className="hud-chip"><em>DURUM</em> önizleme · analiz başlatılmadı</span>
+        ) : (
+          <span />
         )}
       </div>
     </div>
