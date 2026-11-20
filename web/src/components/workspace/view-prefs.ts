@@ -6,7 +6,7 @@ export interface ViewPrefs {
   showBoxes: boolean;
   showLabels: boolean;
   hiddenClasses: ReadonlySet<number>;
-  /** Split modunda orijinalin kapladığı yüzde (0–100). */
+  /** Karşılaştır modunda orijinalin kapladığı yüzde (0–100). */
   splitPct: number;
 }
 
@@ -17,3 +17,9 @@ export const DEFAULT_VIEW_PREFS: ViewPrefs = {
   hiddenClasses: new Set(),
   splitPct: 50,
 };
+
+export const VIEW_MODE_OPTIONS: Array<{ value: ViewMode; label: string }> = [
+  { value: "overlay", label: "Tespitli Görünüm" },
+  { value: "original", label: "Orijinal" },
+  { value: "split", label: "Karşılaştır" },
+];

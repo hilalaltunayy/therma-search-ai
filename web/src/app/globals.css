@@ -1,51 +1,52 @@
 @import "tailwindcss";
 
 /*
- * THERMA SEARCH AI — tasarım token'ları (bkz. docs/frontend-design-system.md)
- * Tailwind v4 @theme: her --color-* token'ı bg-/text-/border- yardımcı sınıflarını üretir.
+ * THERMA SEARCH AI — tasarım token'ları v0.2 (bkz. docs/frontend-design-system.md)
+ * Renk rolleri:
+ *   cyan    → aktif teknik kontroller ve TÜM tespit kutuları
+ *   violet  → seçim ve odak (seçili tespit, seçili kart); purple yalnız dolgu/kenar/ışıma, metin değil
+ *   orange  → zaman imleci (oynatma konumu, HUD zaman değeri) ve marka; küçük metinde orange-text
+ *   amber   → yalnızca DEMO / MOCK ve uyarı
+ *   danger  → hata (erişilebilir kırmızı)
  */
 @theme {
-  /* Yüzeyler: derinlik sırası base < surface < raised < overlay */
-  --color-base: #060a13;
-  --color-surface: #0a111d;
-  --color-raised: #0f1828;
-  --color-overlay: #152136;
-  --color-line: #1c2a40;
-  --color-line-strong: #2a3b57;
+  --color-base: #080d17;
+  --color-deep: #04070d;
+  --color-surface: #182535;
+  --color-surface-2: #111b2a;
+  --color-raised: #1e2d41;
+  --color-line: rgb(148 170 200 / 0.12);
+  --color-line-strong: rgb(148 170 200 / 0.24);
 
-  /* Metin (WCAG AA: ink/muted/subtle, surface üzerinde ≥ 4.5:1) */
-  --color-ink: #e8eef8;
-  --color-muted: #9aa9c0;
-  --color-subtle: #8393ab;
+  --color-ink: #e8eef7;
+  --color-muted: #a3b1c6;
+  --color-subtle: #8a9ab2;
+  --color-disabled: #5d6b80;
 
-  /* Vurgu: cyan = birincil, teal = ikincil/başarı-yakın, electric = bilgi */
-  --color-accent: #22d3ee;
-  --color-accent-strong: #06b6d4;
-  --color-accent-soft: #0b3a4a;
-  --color-teal: #2dd4bf;
-  --color-electric: #4f8cff;
-
-  /* Durum */
-  --color-warn: #f59e0b;
-  --color-warn-soft: #3a2806;
-  --color-danger: #fb5a6e;
-  --color-danger-soft: #3b1019;
-  --color-ok: #34d399;
-  --color-ok-soft: #0a3328;
+  --color-cyan: #22c9d9;
+  --color-cyan-soft: rgb(34 201 217 / 0.12);
+  --color-purple: #7556b8;
+  --color-violet: #a38be0;
+  --color-violet-soft: rgb(117 86 184 / 0.22);
+  --color-orange: #bd6542;
+  --color-orange-text: #de8a66;
+  --color-amber: #f0a345;
+  --color-amber-soft: rgb(240 163 69 / 0.1);
+  --color-danger: #f47078;
+  --color-danger-soft: rgb(244 112 120 / 0.12);
 
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo, Consolas, monospace;
 
-  --radius-panel: 12px;
-  --shadow-panel: 0 1px 0 0 rgb(255 255 255 / 0.03) inset, 0 8px 24px -12px rgb(0 0 0 / 0.6);
+  --ease-out-soft: cubic-bezier(0.2, 0.7, 0.2, 1);
 
-  --animate-rise: rise 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-rise: rise 0.24s var(--ease-out-soft) both;
   --animate-pulse-dot: pulse-dot 2s ease-in-out infinite;
   --animate-scan: scan 2.4s linear infinite;
 }
 
 @keyframes rise {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: none; }
 }
 @keyframes pulse-dot {
@@ -54,78 +55,241 @@
 }
 @keyframes scan {
   from { transform: translateY(-100%); }
-  to { transform: translateY(100%); }
+  to { transform: translateY(300%); }
 }
 @keyframes indeterminate {
   from { transform: translateX(-100%); }
-  to { transform: translateX(250%); }
+  to { transform: translateX(300%); }
 }
 
 :root { color-scheme: dark; }
+html, body { min-height: 100%; }
 
-html, body { height: 100%; }
+/*
+ * Zemin: cam yüzeylerin "okunabilmesi" için arkada kontrollü tonal fark gerekir.
+ * İki ışık alanı (mor sağ üstte, cyan sol altta) + çok düşük opaklıkta topoğrafik eş yükselti halkaları.
+ */
 body {
-  background:
-    radial-gradient(1200px 500px at 85% -10%, rgb(34 211 238 / 0.06), transparent 60%),
-    radial-gradient(900px 500px at -10% 110%, rgb(79 140 255 / 0.05), transparent 60%),
-    var(--color-base);
+  background-color: var(--color-base);
+  background-image:
+    radial-gradient(900px 560px at 96% 8%, rgb(117 86 184 / 0.3), transparent 64%),
+    radial-gradient(520px 420px at 90% 78%, rgb(34 201 217 / 0.1), transparent 70%),
+    radial-gradient(900px 520px at 18% 112%, rgb(34 201 217 / 0.09), transparent 60%),
+    repeating-radial-gradient(circle at 82% 34%, transparent 0 40px, rgb(163 177 198 / 0.07) 40px 41px),
+    repeating-radial-gradient(circle at 12% 88%, transparent 0 58px, rgb(148 170 200 / 0.04) 58px 59px);
+  background-attachment: fixed;
   color: var(--color-ink);
   font-family: var(--font-sans);
-  font-feature-settings: "cv11", "ss01";
+  font-size: 14px;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 
 .tnum { font-variant-numeric: tabular-nums; }
 
 :focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--color-cyan);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: 6px;
 }
-
-::selection { background: rgb(34 211 238 / 0.3); }
-
-/* İnce kaydırma çubukları */
+::selection { background: rgb(34 201 217 / 0.3); }
 * { scrollbar-width: thin; scrollbar-color: var(--color-line-strong) transparent; }
 
-/* Aralık (range) girdisi: izleme alanı ve başparmak */
+@layer components {
+/* ------------------------------------------------------------------ */
+/* Cam (glassmorphism) katmanları                                       */
+/* ------------------------------------------------------------------ */
+
+/* Ana cam yüzey: Inspector, analitik panelleri, açılır bilgi panelleri. */
+.glass {
+  position: relative;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.045), rgb(255 255 255 / 0) 42%),
+    linear-gradient(160deg, rgb(30 45 65 / 0.52), rgb(17 27 42 / 0.5));
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  backdrop-filter: blur(16px) saturate(150%);
+  border: 1px solid rgb(163 177 198 / 0.16);
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.06),
+    0 18px 40px -24px rgb(0 0 0 / 0.75);
+}
+/* Üst kenarda ince ışık çizgisi (cyan → violet). */
+.glass-edge::before {
+  content: "";
+  position: absolute;
+  inset: 0 12% auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgb(34 201 217 / 0.55), rgb(163 139 224 / 0.55), transparent);
+  pointer-events: none;
+}
+
+/* Etkileşimli cam kart: tespit kartları, metrik kartları, S&R modülleri. */
+.glass-card {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(240px circle at var(--mx, 50%) var(--my, -20%), rgb(34 201 217 / 0), transparent 70%),
+    linear-gradient(160deg, rgb(30 45 65 / 0.55), rgb(14 22 35 / 0.6));
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
+  backdrop-filter: blur(12px) saturate(130%);
+  border: 1px solid rgb(163 177 198 / 0.13);
+  box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.05), 0 8px 24px -18px rgb(0 0 0 / 0.8);
+  transition:
+    border-color 0.2s var(--ease-out-soft),
+    box-shadow 0.2s var(--ease-out-soft),
+    transform 0.2s var(--ease-out-soft),
+    background-color 0.2s var(--ease-out-soft);
+}
+/* İmleci izleyen yumuşak yansıma; yalnızca hover destekleyen cihazlarda. */
+.glass-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 0%), rgb(34 201 217 / 0.13), rgb(117 86 184 / 0.07) 45%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.22s var(--ease-out-soft);
+  pointer-events: none;
+  z-index: -1;
+}
+@media (hover: hover) {
+  .glass-card:hover {
+    border-color: rgb(34 201 217 / 0.38);
+    transform: translateY(-1px);
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.08),
+      inset 0 0 28px 0 rgb(34 201 217 / 0.06),
+      0 14px 30px -18px rgb(0 0 0 / 0.85),
+      0 0 0 1px rgb(34 201 217 / 0.08);
+  }
+  .glass-card:hover::after { opacity: 1; }
+}
+.glass-card:active { transform: translateY(0) scale(0.995); }
+.glass-card:focus-visible { outline: 2px solid var(--color-cyan); outline-offset: 2px; }
+
+/* Seçim: hover'dan ayrı ve kalıcı — violet kenar, mor dolgu, ince halka. */
+.glass-card[data-selected="true"] {
+  border-color: rgb(163 139 224 / 0.7);
+  background:
+    linear-gradient(135deg, rgb(117 86 184 / 0.32), rgb(117 86 184 / 0.08) 60%),
+    linear-gradient(160deg, rgb(30 45 65 / 0.55), rgb(14 22 35 / 0.6));
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.08),
+    0 0 0 1px rgb(163 139 224 / 0.35),
+    0 12px 32px -16px rgb(117 86 184 / 0.55);
+}
+.glass-card[data-selected="true"]::after { background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 0%), rgb(163 139 224 / 0.16), transparent 70%); }
+@media (hover: hover) {
+  .glass-card[data-selected="true"]:hover { border-color: rgb(163 139 224 / 0.9); }
+}
+
+/* Görüntü üstü/çevresi HUD çipleri: küçük, yoğun cam. */
+.hud-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font: 500 12.5px/1 var(--font-mono);
+  color: var(--color-ink);
+  background: rgb(10 16 27 / 0.62);
+  -webkit-backdrop-filter: blur(10px) saturate(130%);
+  backdrop-filter: blur(10px) saturate(130%);
+  border: 1px solid rgb(232 238 247 / 0.1);
+  box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.05);
+  white-space: nowrap;
+}
+.hud-chip em { font-style: normal; color: var(--color-subtle); }
+
+/* ------------------------------------------------------------------ */
+/* Görüntüleme sahnesi                                                  */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Sahne (stage) ızgarası: üst HUD satırı · kare · alt cetvel/DEMO satırı.
+ * HUD ögeleri karenin DIŞINDA durur; tespitlerin üstünü kapatmaz.
+ * Masaüstünde kare, kapsayıcı boyutundan (container query) hesaplanır; mobilde oranla akar.
+ */
+.stage {
+  position: relative;
+  display: grid;
+  grid-template-rows: 44px minmax(0, 1fr) 48px;
+  background:
+    radial-gradient(rgb(148 170 200 / 0.12) 1px, transparent 1px) 0 0 / 24px 24px,
+    var(--color-deep);
+}
+.stage-frame-cell {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  padding: 0 16px 0 44px;
+}
+.stage-frame {
+  position: relative;
+  aspect-ratio: var(--ratio, 1.25);
+  width: 100%;
+}
+@media (min-width: 1024px) {
+  .stage { container-type: size; min-height: 0; }
+  .stage-frame { width: min(calc(100cqw - 64px), calc((100cqh - 92px) * var(--ratio, 1.25))); }
+}
+@media (max-width: 1023.98px) {
+  .stage { grid-template-rows: 40px auto 44px; }
+  .stage-frame-cell { padding: 0 12px; }
+}
+
+/* HUD köşe işaretleri: soluk, karenin dışında. */
+.bracket { position: absolute; width: 16px; height: 16px; border: 0 solid rgb(232 238 247 / 0.42); pointer-events: none; }
+.bracket.tl { left: -6px; top: -6px; border-left-width: 1.5px; border-top-width: 1.5px; }
+.bracket.tr { right: -6px; top: -6px; border-right-width: 1.5px; border-top-width: 1.5px; }
+.bracket.bl { left: -6px; bottom: -6px; border-left-width: 1.5px; border-bottom-width: 1.5px; }
+.bracket.br { right: -6px; bottom: -6px; border-right-width: 1.5px; border-bottom-width: 1.5px; }
+
+}
+
+/* ------------------------------------------------------------------ */
+/* Aralık (range) girdisi                                               */
+/* ------------------------------------------------------------------ */
 input[type="range"].range {
   -webkit-appearance: none;
   appearance: none;
-  height: 20px;
+  height: 24px;
   background: transparent;
   cursor: pointer;
 }
+input[type="range"].range:disabled { cursor: not-allowed; opacity: 0.5; }
 input[type="range"].range::-webkit-slider-runnable-track {
-  height: 4px;
+  height: 6px;
   border-radius: 999px;
-  background: linear-gradient(to right, var(--color-accent) var(--fill, 0%), var(--color-line-strong) var(--fill, 0%));
+  background: linear-gradient(to right, rgb(148 170 200 / 0.2) var(--fill, 0%), var(--color-cyan) var(--fill, 0%));
 }
-input[type="range"].range::-moz-range-track {
-  height: 4px;
-  border-radius: 999px;
-  background: var(--color-line-strong);
+input[type="range"].range.fill-left::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, var(--color-cyan) var(--fill, 0%), rgb(148 170 200 / 0.2) var(--fill, 0%));
 }
-input[type="range"].range::-moz-range-progress { height: 4px; border-radius: 999px; background: var(--color-accent); }
+input[type="range"].range::-moz-range-track { height: 6px; border-radius: 999px; background: rgb(148 170 200 / 0.2); }
 input[type="range"].range::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 16px; height: 16px; margin-top: -6px;
+  width: 18px;
+  height: 18px;
+  margin-top: -6px;
   border-radius: 999px;
   background: var(--color-ink);
-  border: 2px solid var(--color-accent);
-  box-shadow: 0 0 0 4px rgb(34 211 238 / 0.12);
+  border: 3px solid var(--color-cyan);
+  transition: box-shadow 0.18s var(--ease-out-soft), transform 0.18s var(--ease-out-soft);
 }
-input[type="range"].range::-moz-range-thumb {
-  width: 12px; height: 12px;
-  border-radius: 999px;
-  background: var(--color-ink);
-  border: 2px solid var(--color-accent);
-}
+input[type="range"].range:hover::-webkit-slider-thumb { box-shadow: 0 0 0 6px rgb(34 201 217 / 0.16); }
+input[type="range"].range:active::-webkit-slider-thumb { transform: scale(1.1); }
+input[type="range"].range:focus-visible { outline: none; }
+input[type="range"].range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px var(--color-base), 0 0 0 5px var(--color-cyan); }
+input[type="range"].range::-moz-range-thumb { width: 14px; height: 14px; border-radius: 999px; background: var(--color-ink); border: 3px solid var(--color-cyan); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
+  .glass-card:hover { transform: none; }
 }
