@@ -43,7 +43,7 @@ npm test                         # vitest birim testleri
 | --- | --- |
 | Dosya seçme/sürükleme, tür-boyut doğrulaması, görüntü/video önizleme ve oynatma | Tespit kutuları ve skorlar (yapay) |
 | Eşik filtresi, kutu/etiket/sınıf anahtarları, orijinal/işlenmiş/bölünmüş görünüm | Model çıkarımı, işlem süresi (simülasyon) |
-| İş durumu akışı: hazır, işleniyor, başarılı, hata, iptal (hata mock'ta simüle edilir) | GPS, risk puanı, harita, rota, ekipler (yalnızca "Planlı" kartları) |
+| İş durumu akışı: hazır, işleniyor, başarılı, hata, iptal (hata mock'ta simüle edilir) | GPS, risk puanı, harita, rota, ekipler ve Model & Dataset Lab (yalnızca "Planlı" kartları) |
 | İstatistik/histogram/zaman çizelgesi hesapları (verilen sonuç üzerinden) | Kalıcı analiz geçmişi, backend sağlık/yetenek bilgisi |
 
 MP4 oynatma tarayıcının H.264 desteğine bağlıdır; çözülemeyen dosya açık hata mesajıyla reddedilir. API taslağı: [docs/api-contract.md](docs/api-contract.md). Tasarım sistemi: [docs/frontend-design-system.md](docs/frontend-design-system.md).

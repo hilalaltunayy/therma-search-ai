@@ -1,69 +1,78 @@
-# Therma Search AI — web tasarım sistemi (v0.1)
+# Therma Search AI — web tasarım sistemi (v0.2)
 
-Amaç: arama-kurtarma operasyon/İHA görüntü analiz merkezinde kullanılabilecek, ciddi ve sade bir **premium dark** arayüz. Token'lar tek kaynaktan gelir: [`web/src/app/globals.css`](../web/src/app/globals.css) (`@theme`).
+Hedef: arama-kurtarma İHA görüntü analizinde kullanılabilecek, ciddi ve okunaklı bir **Mission Control** arayüzü. Token'ların tek kaynağı [`web/src/app/globals.css`](../web/src/app/globals.css) (`@theme` ve `@layer components`).
 
-> Not: Tasarım referans görselleri bu sürümün geliştirilmesi sırasında elimde yoktu; palet ve yerleşim, görev tanımındaki yazılı yönerge (koyu lacivert/slate, cyan/teal vurgu, amber uyarı, ince çerçeveler) esas alınarak kuruldu. Görseller paylaşıldığında token değerleri tek dosyada ayarlanabilir.
+> Uygulama henüz gerçek backend'e bağlı değildir. Mock sonuçlar her ekranda amber **DEMO / MOCK** etiketi taşır.
 
-## Renk
+## Renk rolleri
 
-| Rol | Token | Değer | Kullanım |
+| Rol | Token | Değer | Nerede |
 | --- | --- | --- | --- |
-| Zemin | `base` | `#060a13` | sayfa zemini |
-| Yüzey | `surface` / `raised` / `overlay` | `#0a111d` / `#0f1828` / `#152136` | panel → yükseltilmiş → seçili/hover |
-| Çizgi | `line` / `line-strong` | `#1c2a40` / `#2a3b57` | 1 px çerçeve, ayırıcı |
-| Metin | `ink` / `muted` / `subtle` | `#e8eef8` / `#9aa9c0` / `#8393ab` | birincil / ikincil / üçüncül (yüzeyler üzerinde AA hedefi) |
-| Vurgu | `accent` (cyan) `#22d3ee`, `teal` `#2dd4bf`, `electric` `#4f8cff` | | birincil eylem, yüksek skor / orta skor |
-| Durum | `warn` `#f59e0b`, `danger` `#fb5a6e`, `ok` `#34d399` (+ `-soft` zeminler) | | DEMO/uyarı, hata, başarı |
+| Zemin | `base` / `deep` | `#080D17` / `#04070D` | sayfa zemini / görüntüleme sahnesi |
+| Yüzey | `surface` / `surface-2` / `raised` | `#182535` / `#111B2A` / `#1E2D41` | opak paneller, kontroller, hover |
+| Çizgi | `line` / `line-strong` | %12 / %24 slate | 1 px çerçeveler |
+| Metin | `ink` / `muted` / `subtle` / `disabled` | `#E8EEF7` / `#A3B1C6` / `#8A9AB2` / `#5D6B80` | `subtle` raised üzerinde 4.87:1 |
+| **Cyan** | `cyan` | `#22C9D9` | aktif teknik kontroller, birincil eylem, **tüm tespit kutuları** |
+| **Mor** | `purple` / `violet` | `#7556B8` / `#A38BE0` | yalnız **seçim ve odak**: seçili tespit (kart + kutu), eşik çizgisi, cam üst kenar ışığı. `purple` metinde kullanılmaz (yüzeyde 2.79:1) |
+| **Koyu turuncu** | `orange` / `orange-text` | `#BD6542` / `#DE8A66` | **zaman** (oynatma imleci, HUD zaman değeri) ve marka işareti. Küçük metinde yalnız `orange-text` (5.86:1) |
+| **Amber** | `amber` | `#F0A345` | yalnız **DEMO / MOCK** ve uyarı; tespit kutularında hiç kullanılmaz |
+| Hata | `danger` | `#F47078` | hata metni ve durumları (yüzeyde ≥4.5:1) |
 
-Kurallar: vurgu rengi **seyrek** kullanılır (birincil eylem, seçili durum, veri); **amber yalnızca** DEMO/MOCK ve uyarı içindir; kırmızı yalnızca hata.
-Skor bantları (≥0.75 cyan, ≥0.5 mavi, altı amber) yalnızca **görsel** sınıflandırmadır; kalibre güven iddiası değildir.
+Kutular neden cyan: termal paletler sıcak tonludur (mor-turuncu-sarı); sıcak renkli kutular termal imzada kaybolur. Skor bandı renkle değil **çizgi stiliyle** ayrılır (skor < 0.50 kesikli). Bu yalnızca görsel ayrımdır, güvenilirlik sınıflandırması değildir.
+
+## Cam (glassmorphism) katmanları
+
+| Sınıf | Kullanım | Yapı |
+| --- | --- | --- |
+| `.glass` (+ `.glass-edge`) | Inspector, analitik panelleri, açılır bilgi paneli, genişletilmiş menü | yarı saydam koyu gradyan, `blur(16px) saturate(150%)`, ince açık kenar, iç üst yansıma; `.glass-edge` üst kenara cyan→violet ışık çizgisi ekler |
+| `.glass-card` | tespit kartları, metrik kartları, S&R / Lab kartları | daha hafif cam; hover/seçim/odak durumları (aşağıda) |
+| `.hud-chip` | görüntü çevresindeki HUD etiketleri | küçük yoğun cam, monospace |
+
+Camın görünmesi için zeminde kontrollü ton farkı vardır: sağ üstte mor, sağ altta ve sol altta cyan ışık alanları ve çok düşük opaklıkta topoğrafik eş yükselti halkaları (`body` arka planı). Görüntüleme sahnesi opaktır (`deep`); termal görüntünün üzerine cam panel yerleşmez. HUD çipleri karenin **dışındaki** satırlardadır, tespitleri örtmez.
+
+## Etkileşim durumları
+
+| Durum | Görsel karşılık (150–250 ms, ease-out, transform/opacity/renk) |
+| --- | --- |
+| Hover (`.glass-card`) | kenar cyan'a yaklaşır, iç ışık ve imleci izleyen cyan/mor yansıma belirir, 1 px yükselir. Yalnız `@media (hover: hover)` |
+| Seçim (`data-selected`) | violet kenar + mor dolgu + ince halka; hover'dan bağımsız ve kalıcı. Görüntüdeki kutu aynı anda violet ve 2 px |
+| Kart/kutu hover eşleşmesi | listedeki karta gelince görüntüdeki kutu açık cyan ve kalınlaşır (ve tersi); yalnız ilgili kutu vurgulanır |
+| Focus | 2 px cyan dış halka (`:focus-visible`) |
+| Active | `scale(0.98–0.995)` basma geri bildirimi |
+| Disabled | `disabled` metin rengi, kesikli kenar, imleç `not-allowed` |
+
+`prefers-reduced-motion` tüm geçiş ve animasyonları kapatır. Dokunmatikte hover'a bağlı bilgi yoktur: tooltip içerikleri ayrıca erişilebilir ad olarak verilir, "Bu nedir?" açıklaması tıklamayla açılır.
 
 ## Tipografi
 
-Sistem yazı tipi yığını (`ui-sans-serif, system-ui, …`) — ağ bağımlılığı ve yazı tipi indirmesi yok; sayılar `tabular-nums`, kimlik/koordinatlar `ui-monospace`. Ölçek: etiket 10–11 px (büyük harf, geniş aralık), gövde 13 px, panel başlığı 13 px semibold, metrik 24 px semibold, sayfa başlığı 14 px.
+Sistem yazı tipi yığını (ağ bağımlılığı yok). Gövde 14–15 px, teknik etiketler en az 12 px, sayılar ve koordinatlar monospace `tabular-nums`. Skor değerleri kartta 16 px kalın, eşik değeri 28 px.
 
-## Aralık, şekil, derinlik
-
-4 px tabanlı Tailwind ölçeği; panel iç boşluğu 16 px, sütun aralığı 16 px. Panel yarıçapı 12 px, düğme 8 px, rozet 6 px. Derinlik gölgeden çok **yüzey rengi + ince çerçeve** ile verilir.
-
-## Bileşen hiyerarşisi
+## Yerleşim
 
 ```text
-app/layout.tsx → AnalysisProvider (durum) → AppShell (sidebar · üst çubuk · drawer)
-  └─ sayfa (workspace | analytics | operations)
-      ├─ ui/primitives: Panel, Badge, StatusDot, Button, Switch, Segmented, Stat, ProgressBar, StateView, DemoBadge
-      ├─ workspace/*: MediaStage ▸ (UploadDropzone | <img>/<video> + DetectionOverlay + CompareHandle + durum katmanları)
-      │               PlayerControls, ControlsPanel, JobPanel, DetectionList, MetricsStrip
-      └─ analytics/*: ConfidenceHistogram, FrameTimeline
+AppShell: 72 px ikon rayı (tooltip + genişletilebilir cam menü) · 56 px üst çubuk (DEMO, API, model çipleri)
+Detection Workspace (lg+, yükseklik = görünüm alanı):
+  ┌ görüntü sütunu ───────────────────────────────┐ ┌ Inspector 372 px (veya 72 px şerit) ┐
+  │ araç çubuğu: dosya · Tespitli/Orijinal/Karşılaştır · Kutular/Skorlar │ Analiz görevi (her zaman)          │
+  │ sahne: HUD satırı · kare (cetvel, köşe işaretleri) · DEMO satırı     │ Güven eşiği + mini histogram        │
+  │ sabit oynatıcı: geri/oynat/ileri · zaman · zaman çizelgesi · hız     │ sekmeler: Tespitler · Görev · Görünüm │
+  └──────────────────────────────────────────────┘ └────────────────────────────────────┘
 ```
 
-- **Panel** tüm yüzeylerin birimidir (başlık satırı + gövde); ad hoc kart yoktur.
-- Veri/mantık UI'dan ayrıdır: `lib/detections` (saf fonksiyonlar), `lib/api` (sözleşme, mock, HTTP), `state/analysis-store` (yaşam döngüsü).
-- **Overlay katmanı** medyadan bağımsızdır: piksel kutuları yüzdeye çevrilir; medya hangi boyutta olursa olsun hizalı kalır.
+- Sahne kapsayıcı boyutundan (container query) hesaplanır; 1366×768'de oynatıcı ve zaman çizelgesi sayfa kaydırması olmadan görünür.
+- Inspector daraltıldığında 72 px şerit durum, karedeki tespit sayısı, eşik ve birincil eylemi korur. Tercih tarayıcıda hatırlanır.
+- `<lg`: tek sütun; sahne, oynatıcı, inspector alt alta. Daraltma yalnız masaüstünde geçerlidir.
+- Etiket yerleşimi `lib/detections/labels.ts`: yakın tespitlerde etiketler çakışmaz ve başka bir kişinin kutusunu örtmekten kaçınır. Kutu geometrisi değişmez.
 
-## Ekran yerleşimi
+## Sayılar ve dürüstlük kuralları
 
-Masaüstü: sol sabit sidebar (256 px) · sticky üst çubuk (sayfa başlığı, DEMO rozeti, backend durumu) · içerik `max 1600 px`. Detection Workspace: **geniş izleme alanı** (sol, esnek) + **340 px denetim sütunu** (iş durumu, görünüm/eşik, tespit listesi); izleme alanının altında oynatıcı ve zaman çizelgesi, onun altında özet. `<lg`: sidebar çekmeceye (drawer) döner, sütunlar alt alta dizilir.
-
-## Durumlar
-
-| Durum | Gösterim |
-| --- | --- |
-| Boş | Sürükle-bırak yükleme alanı, limitler görünür |
-| Doğrulama hatası | Yükleme alanında `role="alert"` mesajı (dosya kaldırılmaz) |
-| Hazır | Önizleme + "Analizi başlat" |
-| Yükleniyor/İşleniyor | Medya üstünde ilerleme kartı, tarama animasyonu, iptal |
-| Başarılı | Kutular, özet, liste, zaman çizelgesi |
-| Hata / İptal | Medya üstünde mesaj + hata kodu + yeniden dene |
-
-DEMO/MOCK sonucu her ekranda **amber rozet** taşır (üst çubuk, izleme alanı, özet, analitik).
-
-## Hareket ve erişilebilirlik
-
-Mikro animasyon: panel girişinde 6 px yükselme (350 ms), durum noktası nabzı, işlem sırasında tarama çizgisi. `prefers-reduced-motion` ile tümü devre dışı kalır. Odak halkası cyan; tüm kontroller klavyeyle kullanılabilir (drawer `Esc`, karşılaştırma ayırıcısı `←/→/Home/End`, zaman çizelgesi `←/→`); "İçeriğe geç" bağlantısı; histogram için ekran okuyucu tablosu; ilerleme çubuğu `role="progressbar"`.
+- "Bu karede n / m": geçerli karede eşik üstü / toplam. "Tüm kareler (kare toplamı)": video boyunca toplam; **benzersiz kişi sayısı değildir** (izleme yok).
+- `#n` kare içi sıradır (en yüksek skor #1), izleme kimliği değildir.
+- HUD yalnız gerçek değer gösterir: medya boyutu, oynatma zamanı, sayılar, eşik. FPS, GPS, sıcaklık, telemetri veya model metriği gösterilmez.
+- Planlı alanlar (operatör doğrulaması, PDF/CSV rapor, analiz geçmişi, S&R modülleri, Model & Dataset Lab) pasif ve "Planlı" etiketlidir.
 
 ## Genişletilebilirlik
 
-- Yeni ekran: `web/src/config/navigation.ts` listesine giriş + `src/app/<rota>/page.tsx`.
-- Yeni SAR modülü: `web/src/features/sar-modules/registry.ts`; modül gerçek veriye bağlanana kadar `planned` kalır ve değer göstermez.
-- Gerçek API: `NEXT_PUBLIC_THERMA_API_MODE=http`; UI yalnızca `AnalysisService` arayüzüne bağlıdır.
+- Yeni ekran: `web/src/config/navigation.ts` + `src/app/<rota>/page.tsx`.
+- S&R modülü: `web/src/features/sar-modules/registry.ts`. Lab bölümü: `web/src/features/lab/registry.ts`. Gerçek kaynak bağlanana kadar değer göstermezler.
+- Gerçek API: `NEXT_PUBLIC_THERMA_API_MODE=http`; arayüz yalnızca `AnalysisService` arayüzüne bağlıdır. Codex inference sözleşmesiyle uyum ayrı PR'da ele alınacaktır.
