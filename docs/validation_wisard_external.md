@@ -20,6 +20,8 @@ Sentetik küçük nesne yakın planı, TP/FP/FN-küçük recall özeti, belirsiz
 
 Sabit Ultralytics 8.3.228 kaynak wheel’i üzerinden `check_det_dataset` için train/val YAML anahtarları (train:null), native eğri dizilerinin plots=False ile hesaplanması ve `nt_per_class` / `nt_per_image` paydaları incelendi. Native mAP GT ve pozitif görüntü sayıları, aynı IR manifestiyle eşleşmek zorundadır. Bu kaynak incelemesi gerçek PyTorch/Ultralytics CPU/CUDA çıkarım testinin yerine geçmez.
 
+Public repo ayrı bir yerel dizine clone/fetch/checkout edilerek `36f11b97f1d998873773ed2524b57e850c727847` yardımcı kod revizyonu ve hafif evaluator import’u doğrulandı. Paket kurulumu, gerçek checkpoint veya veri indirmesi/çıkarımı çalıştırılmadı. Notebook bu revizyona sabitlendikten sonra üç sentetik senaryosu tekrar geçti.
+
 Verilen gerçek yollar dosya sistemi üzerinden kontrol edildi ve mevcut bulunmadı:
 
 - `/content/drive/MyDrive/ThermaSearchAI/runs/hit_uav_yolo11s/run_yolo11s_20261120T151540Z_78fb2af9/best.pt`
