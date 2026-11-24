@@ -166,3 +166,13 @@ Güvenli başlangıç politikası: sıfır **ham** anotasyonlu ve DontCare içer
 Çıktılar `ThermaSearchAI/runs/hit_uav_yolo11s/run_yolo11s_.../` altında Drive’a kaydedilir: best.pt, manifest, train/validation loss/metrikleri, ayrı test mAP ve sabit eşikte Precision/Recall, PR eğrileri, confusion matrix, GT/prediction ve FP/FN örnekleri, süre/GPU/sürüm/parametreler. Ağırlıklar GitHub’a gönderilmez. Notebook 01–03 ve frontend dosyaları değiştirilmez.
 
 [Çalıştırma, veri politikası ve bilimsel kapsam](docs/yolo11s_baseline.md) · [FastAPI/Next.js ortak inference sözleşmesi](docs/inference_api_contract.md) · [Doğrulama kaydı](docs/validation_yolo11s_baseline.md). Eğitim bağımlılığı ayrı `requirements-training-colab.txt` içindedir.
+
+## Phase 05 · WiSARD IR zero-shot dış değerlendirme
+
+[Notebook 05’i Colab’da açın](https://colab.research.google.com/github/hilalaltunayy/therma-search-ai/blob/main/notebooks/05_wisard_external_evaluation.ipynb), tercihen GPU seçip **Çalışma zamanı → Tümünü çalıştır** deyin. İlk Drive izni gerekebilir. Notebook, `run_yolo11s_20261120T151540Z_78fb2af9/best.pt` ve mevcut WiSARD örnek ZIP’ini otomatik kullanır; model/veri indirmez, yeniden eğitim yapmaz.
+
+Yalnızca doğrulanmış IR görüntüleri değerlendirilir. Boş TXT dosyalı belirsiz görüntüler skor dışında bırakılır ve görsel inceleme için kaydedilir. Bozuk IR anotasyonu bütün skorlamayı durdurur. Ultralytics mAP ile sabit confidence=.25 / IoU=.50 TP-FP-FN sonuçları ayrı hesaplanır; küçük nesne recall’u açık GT paydaları kullanır. Eşik optimizasyonu, VIS, eşleştirme ve senkronizasyon yoktur.
+
+Model/ZIP SHA256, sürümler, cihaz, yapılandırma, per-image CSV/JSONL, 200 DPI görseller ve raporlar `ThermaSearchAI/reports/wisard_external_eval/run_wisard_external_.../` altına otomatik kaydedilir. GPU yoksa CPU değerlendirmesi mümkündür. Bu tek uçuşlu, zamansal ilişkili örnek sınırlı bir çapraz veri seti stres testidir; bağımsız görev genellemesi kanıtı değildir ve HIT-UAV skorlarıyla doğrudan eşdeğer benchmark sayılmaz.
+
+[Protokol ve çalıştırma ayrıntıları](docs/wisard_external_evaluation.md) · [Gerçekte çalıştırılan doğrulamalar](docs/validation_wisard_external.md). Önceki notebook’lar, model run’ları, raporlar ve frontend korunur.
