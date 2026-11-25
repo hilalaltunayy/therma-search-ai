@@ -1,0 +1,46 @@
+name: README change audit
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pull-requests: read
+jobs:
+  audit:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+    steps:
+      - name: Check README and documentation impact
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '## README documentation audit\n\n' >> "$GITHUB_STEP_SUMMARY"
+          if gh api "repos/$REPO/readme" --jq '.path' > /tmp/readme-path; then
+            printf 'README exists.\n\n' >> "$GITHUB_STEP_SUMMARY"
+          else
+            printf 'README lookup failed or is missing; review required.\n\n' >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [[ -z "$PR_NUMBER" ]]; then
+            printf 'Manual check: no PR diff provided.\n' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          gh api --paginate "repos/$REPO/pulls/$PR_NUMBER/files?per_page=100" --jq '.[].filename' > /tmp/changed-files
+          python3 - <<'PY'
+          import os, re
+          from pathlib import Path
+          files = Path('/tmp/changed-files').read_text().splitlines()
+          pattern = re.compile(r'(^|/)(readme[^/]*|docs|package\.json|pyproject\.toml|requirements[^/]*|dockerfile[^/]*|compose[^/]*|\.env\.example|app\.json|app\.config[^/]*|api|routes|models|schema|migrations|screens|components|src|web|app)(/|$)', re.I)
+          matched = [f for f in files if pattern.search(f)]
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as out:
+              out.write(f'PR #{os.environ["PR_NUMBER"]}: {len(files)} changed paths.\n\n')
+              out.write('**Review recommended:** potential documentation-impacting changes.\n' if matched else '**No obvious documentation impact:** heuristic only.\n')
+              out.write('\nThis check is advisory; no files were changed.\n')
+          print(f"README review candidates: {len(matched)}")
+          PY
