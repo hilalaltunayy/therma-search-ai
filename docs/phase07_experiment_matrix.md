@@ -32,3 +32,6 @@ Checkpoint seçimi yalnız ilgili run’ın kaynak validation fitness’iyle yap
 Son model/protokol dondurulduktan sonra açılacak, farklı uçuş/görev/saha ve çekim koşullarından oluşan yeni bir dış küme gerekir. Yakın kareler/aynı olay tek grup tutulmalı; sahne/etiket kapsamı, doğrulanmış negatifler ve insan anotasyonu kalitesi bağımsız incelenmelidir. Bu küme model hatalarına bakılarak örnek seçme veya threshold ayarlama amacıyla kullanılmaz. Operasyonel yanlış alarm için belirsiz boş TXT yerine doğrulanmış negatif sahneler gerekir. Tekrar bakılmış WiSARD sonuçları ancak ikincil tanılama bağlamı olarak raporlanır.
 
 Makine tarafından okunabilir öneri: `configs/phase07_experiment_matrix.json`. Dosya yürütülebilir eğitim komutu değildir; gerçek etkin parametreler ve onay çözülmeden eğitim başlatılmaz.
+
+
+Uygulama hazırlığı: [phase07_controlled_training.md](phase07_controlled_training.md). Gerçek baseline optimizer/schedule kanıtları incelenmiş, Notebook 07 ve ortak GPU preflight hazırlanmıştır; eğitim henüz çalıştırılmamıştır.

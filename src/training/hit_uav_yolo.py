@@ -84,7 +84,7 @@ def validate_prepared_dataset(root):
     if manifest['status'] not in ('validating', 'ready') or manifest['policy'] != POLICY:
         raise ValueError('Veri manifesti hazır değil veya politika uyuşmuyor.')
     selected = tuple(manifest.get('selected_splits', SPLITS))
-    if selected not in (SPLITS, ('val',)):
+    if selected not in (SPLITS, ('val',), ('train','val')):
         raise ValueError('Desteklenmeyen seçili split kapsamı.')
     expected_files = set()
     counts = {s: {'images': 0, 'labels': 0, 'Person': 0, 'person_background_images': 0} for s in selected}
@@ -128,14 +128,15 @@ def validate_prepared_dataset(root):
 def prepare_hit_uav_yolo(archive_path, output_dir, *, code_revision, progress=print, splits=SPLITS):
     """Bütün JSON/görüntüleri doğrula; kopya üret; hatada status=failed ve exception.
 
+    splits=('train','val') kontrollü eğitim içindir; test okunmaz.
     splits=('val',) yalnızca kaynak validation tanılaması içindir; train/test
     dosyaları okunmaz. Varsayılan eski üç-split davranışı korunur.
     output_dir yeni olmalıdır. Kaynak byte’lar değiştirilmeden kopyalanır. Çıktı
     dosya adları özgün image ID’sinden üretilir; kaynak adları manifestte korunur.
     """
     selected = tuple(splits)
-    if selected not in (SPLITS, ('val',)):
-        raise ValueError('Yalnızca özgün üç split veya yalnızca val hazırlanabilir.')
+    if selected not in (SPLITS, ('val',), ('train','val')):
+        raise ValueError('Yalnızca özgün üç split, train+val veya yalnızca val hazırlanabilir.')
     output = Path(output_dir).resolve()
     output.mkdir(parents=True, exist_ok=False)
     manifest = {'status': 'preparing', 'created_utc': datetime.now(timezone.utc).isoformat(),
@@ -143,6 +144,8 @@ def prepare_hit_uav_yolo(archive_path, output_dir, *, code_revision, progress=pr
                 'source_url': 'https://zenodo.org/records/7633134',
                 'source_provenance': 'Sürüm ve önceki MD5 doğrulaması kullanıcı beyanı; SHA256 bu çalıştırmada hesaplanır.',
                 'policy': POLICY, 'risks': RISKS, 'selected_splits': list(selected), 'images': [], 'splits': {}, 'issues': []}
+    if selected == ('train','val'):
+        manifest['preparation_scope'] = 'original_train_val_only_no_test_images_or_annotations_read'
     manifest_path = output/'dataset_manifest.json'
     write_json(manifest_path, manifest)
     try:

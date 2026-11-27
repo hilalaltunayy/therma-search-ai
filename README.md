@@ -182,3 +182,6 @@ Model/ZIP SHA256, sürümler, cihaz, yapılandırma, per-image CSV/JSONL, 200 DP
 [Notebook 06’yı Colab’da açın](https://colab.research.google.com/github/hilalaltunayy/therma-search-ai/blob/main/notebooks/06_hit_uav_error_analysis.ipynb), tercihen GPU seçip **Tümünü çalıştır** deyin. Mevcut HIT-UAV checkpoint’i yalnızca özgün filtered validation üzerinde incelenir; eğitim, test inference veya WiSARD model seçimi yapılmaz. Önceki DontCare/sıfır-ham-anotasyon politikası korunur. WiSARD ZIP’i varsa yalnızca GT/piksel betimlemesi yapılır.
 
 Yeni hata kategorileri, küçük nesne recall’u, confidence/kontrast/boyut dağılımları, native/fixed yöntem denetimi ve raporlar `ThermaSearchAI/reports/phase06_error_analysis/run_phase06_.../` altına kaydedilir. [Çalıştırma ve yöntem](docs/phase06_error_analysis.md) · [Ek paket incelemesi](docs/phase06_evidence_review.md) · [Çalıştırılmamış Faz 07 deney matrisi](docs/phase07_experiment_matrix.md). WiSARD artık görülmüş tanılama verisidir; final genelleme için yeni bağımsız dış veri gerekir.
+
+
+Faz 07 kontrollü eğitim hazırlığı: [Notebook 07](notebooks/07_hit_uav_controlled_training.ipynb) ve [gerçek baseline ayarları/Colab talimatları](docs/phase07_controlled_training.md). Varsayılan Tümünü çalıştır hazırlık + GPU bellek preflight yapar; eğitim kapısı kapalıdır.
