@@ -27,4 +27,6 @@ Sentetik confidence/FN-candidate histogramı ile kaynak/target display-intensity
 
 Ultralytics 8.3.228 kaynak wheel’inde validation callback zamanlaması, rectangular dataset pad=.5, native JSON export ve metric denominator yolları incelendi. Bu kaynak incelemesi gerçek CUDA/PyTorch/Ultralytics çıkarım testinin yerine geçmez. Colab Drive OAuth ve gerçek veri üzerinde native/fixed tutarlılığı henüz burada denenmedi. Gerçek girdi yolları dosya sistemiyle kontrol edildi ve bulunmadı; kaynak hata dağılımları Colab çalıştırmasında ölçülecektir.
 
+Public repo ayrı yerel dizine clone/fetch/checkout edilerek sabit `8aae3fb2f8ac964300076b529829ba4331891df7` yardımcı kod revizyonu ve hafif Phase 06 import’u doğrulandı. Bu kontrol paket/model/veri indirmesi veya çıkarım/eğitim çalıştırmadı. Notebook bu revizyona sabitlendikten sonra iki sentetik senaryosu tekrar geçti.
+
 Phase 07 matrisi yalnızca **öneridir**. Gerçek baseline etkin optimizer/lr/augmentasyon ayarları, batch bellek uygunluğu ve kullanıcı eğitim onayı çözülmeden çalıştırılmaz. Validation geçmiş checkpoint seçiminde kullanılmıştır; WiSARD da incelenmiştir. Bağımsız final genelleme için yeni dış veri gerekir. Eski raporlar, checkpoint’ler, kaynak splitler ve frontend değiştirilmedi; eğitim veya veri/model indirmesi yapılmadı.
