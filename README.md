@@ -176,3 +176,9 @@ Yalnızca doğrulanmış IR görüntüleri değerlendirilir. Boş TXT dosyalı b
 Model/ZIP SHA256, sürümler, cihaz, yapılandırma, per-image CSV/JSONL, 200 DPI görseller ve raporlar `ThermaSearchAI/reports/wisard_external_eval/run_wisard_external_.../` altına otomatik kaydedilir. GPU yoksa CPU değerlendirmesi mümkündür. Bu tek uçuşlu, zamansal ilişkili örnek sınırlı bir çapraz veri seti stres testidir; bağımsız görev genellemesi kanıtı değildir ve HIT-UAV skorlarıyla doğrudan eşdeğer benchmark sayılmaz.
 
 [Protokol ve çalıştırma ayrıntıları](docs/wisard_external_evaluation.md) · [Gerçekte çalıştırılan doğrulamalar](docs/validation_wisard_external.md). Önceki notebook’lar, model run’ları, raporlar ve frontend korunur.
+
+## Faz 06 · Kaynak validation hata analizi ve kontrollü deney planı
+
+[Notebook 06’yı Colab’da açın](https://colab.research.google.com/github/hilalaltunayy/therma-search-ai/blob/main/notebooks/06_hit_uav_error_analysis.ipynb), tercihen GPU seçip **Tümünü çalıştır** deyin. Mevcut HIT-UAV checkpoint’i yalnızca özgün filtered validation üzerinde incelenir; eğitim, test inference veya WiSARD model seçimi yapılmaz. Önceki DontCare/sıfır-ham-anotasyon politikası korunur. WiSARD ZIP’i varsa yalnızca GT/piksel betimlemesi yapılır.
+
+Yeni hata kategorileri, küçük nesne recall’u, confidence/kontrast/boyut dağılımları, native/fixed yöntem denetimi ve raporlar `ThermaSearchAI/reports/phase06_error_analysis/run_phase06_.../` altına kaydedilir. [Çalıştırma ve yöntem](docs/phase06_error_analysis.md) · [Ek paket incelemesi](docs/phase06_evidence_review.md) · [Çalıştırılmamış Faz 07 deney matrisi](docs/phase07_experiment_matrix.md). WiSARD artık görülmüş tanılama verisidir; final genelleme için yeni bağımsız dış veri gerekir.
