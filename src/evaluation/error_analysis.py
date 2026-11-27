@@ -9,6 +9,10 @@ from PIL import Image
 from .person_detection import box_iou, match_person_predictions
 from .wisard_external_metrics import small_object_recall
 
+# Ultralytics 8.3.228 DetectionValidator.init_metrics/save_one_json:
+# non-COCO category IDs are 1-based; internal Person remains class 0.
+NATIVE_PERSON_CATEGORY_TO_CLASS = {1: 0}
+
 IOU_GROUPS = ('zero_overlap','gt_0_lt_0_1','0_1_to_0_3','0_3_to_0_5','ge_0_5')
 
 
@@ -49,7 +53,7 @@ def diagnose_image(targets, predictions, native_predictions=None):
 
 
 def load_native_predictions(path, image_rows):
-    """Pinned Ultralytics JSON: image stem ID, category 0, rounded pixel xywh.
+    """Ultralytics 8.3.228 non-COCO JSON: stem ID, category 1 -> Person class 0.
 
     IDs are mapped explicitly; unknown IDs are errors. An empty list is a valid
     no-predictions export. Rounding-sized boundary drift is retained, not repaired.
@@ -58,26 +62,31 @@ def load_native_predictions(path, image_rows):
     for row in image_rows:
         stem=Path(row['image_path']).stem
         key=int(stem) if stem.isnumeric() else stem
-        if str(key) in keys:
+        if key in keys:
             raise ValueError('Ambiguous native image ID.')
-        keys[str(key)]=row['member']
+        keys[key]=row
     result={r['member']:[] for r in image_rows}
     values=json.loads(Path(path).read_text())
     if not isinstance(values,list):
         raise ValueError('Native predictions export must be a list.')
-    for entry in values:
-        key=str(entry['image_id'])
-        if key not in keys or entry['category_id'] != 0:
-            raise ValueError('Unknown native image/category ID; no heuristic ID or class mapping.')
+    for index, entry in enumerate(values):
+        if not isinstance(entry, dict):
+            raise ValueError(f'Native prediction {index} must be an object.')
+        key=entry.get('image_id')
+        if type(key) not in (int,str) or key not in keys:
+            raise ValueError(f'Unknown native image ID at prediction {index}: {key!r}; expected the exact exported stem ID.')
+        category=entry.get('category_id')
+        if type(category) is not int or category not in NATIVE_PERSON_CATEGORY_TO_CLASS:
+            raise ValueError(f'Unknown native category ID at prediction {index}: {category!r}; expected non-COCO Person category_id=1.')
         x,y,w,h=map(float,entry['bbox'])
         confidence=float(entry['score'])
         if not all(math.isfinite(v) for v in (x,y,w,h,confidence)) or min(w,h)<0 or not .001<=confidence<=1:
             raise ValueError('Invalid native box/score.')
-        row=next(r for r in image_rows if r['member']==keys[key])
+        row=keys[key]
         if x < -.002 or y < -.002 or x+w > row['width']+.002 or y+h > row['height']+.002:
             raise ValueError('Native box exceeds rounding tolerance at original image boundaries.')
-        result[keys[key]].append({'bbox_xyxy':[x,y,x+w,y+h],'confidence':confidence,
-                                  'class_id':0,'class_name':'Person','degenerate_after_JSON_rounding':min(w,h)==0})
+        result[row['member']].append({'bbox_xyxy':[x,y,x+w,y+h],'confidence':confidence,
+                                  'class_id':NATIVE_PERSON_CATEGORY_TO_CLASS[category],'class_name':'Person','degenerate_after_JSON_rounding':min(w,h)==0})
     return result
 
 
