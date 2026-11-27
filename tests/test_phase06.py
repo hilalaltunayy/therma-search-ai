@@ -14,6 +14,7 @@ from src.data.audit import file_digest
 from src.data.hit_uav_archive import HitUAVArchive
 from src.training.hit_uav_yolo import prepare_hit_uav_yolo,validate_prepared_dataset
 from src.evaluation.error_analysis import (iou_group,diagnose_image,load_native_predictions,image_descriptors,summarize_histogram)
+from src.evaluation.native_preflight import latest_native_run,preflight_native_export
 from src.evaluation.phase06 import run_phase06,protocol_review
 from src.evaluation.phase06_evidence import review_diagnostic_package
 from test_yolo_training import make_training_fixture, result_stub
@@ -29,8 +30,8 @@ class Phase06Model:
         self.calls.append(('val',kwargs))
         out=Path(kwargs['project'])/kwargs['name'];out.mkdir(parents=True)
         (out/'predictions.json').write_text(json.dumps([
-            {'image_id':'image_1','category_id':0,'bbox':[64,128,128,256],'score':.9},
-            {'image_id':'image_4','category_id':0,'bbox':[64,128,128,256],'score':.8}]))
+            {'image_id':'image_1','category_id':1,'bbox':[64,128,128,256],'score':.9},
+            {'image_id':'image_4','category_id':1,'bbox':[64,128,128,256],'score':.8}]))
         validator=SimpleNamespace(dataloader=SimpleNamespace(dataset=SimpleNamespace(batch_shapes=[[544,672]])),
             args=SimpleNamespace(**kwargs),seen=2,jdict=[1,2])
         self.callbacks['on_val_end'](validator)
@@ -113,11 +114,55 @@ class Phase06Tests(unittest.TestCase):
     def test_native_ID_xywh_mapping_rounding_and_unknown_ID_rejection(self):
         path=self.root/'native.json'
         rows=[{'image_path':'images/val/image_7.png','member':'original','width':640,'height':512}]
-        path.write_text(json.dumps([{'image_id':'image_7','category_id':0,'bbox':[10,20,8,12],'score':.01}]))
+        path.write_text(json.dumps([{'image_id':'image_7','category_id':1,'bbox':[10,20,8,12],'score':.01}]))
         result=load_native_predictions(path,rows)
         self.assertEqual(result['original'][0]['bbox_xyxy'],[10,20,18,32])
-        path.write_text(json.dumps([{'image_id':'wrong','category_id':0,'bbox':[10,20,8,12],'score':.01}]))
+        self.assertEqual(result['original'][0]['class_id'],0)
+        self.assertEqual(result['original'][0]['class_name'],'Person')
+        path.write_text(json.dumps([{'image_id':'wrong','category_id':1,'bbox':[10,20,8,12],'score':.01}]))
         with self.assertRaises(ValueError): load_native_predictions(path,rows)
+
+    def test_native_rejects_unknown_categories_without_coercion(self):
+        path=self.root/'native.json'
+        rows=[{'image_path':'images/val/7.png','member':'original','width':640,'height':512}]
+        for category in (0,2,-1,True,1.0,'1',None):
+            with self.subTest(category=category):
+                path.write_text(json.dumps([{'image_id':7,'category_id':category,'bbox':[10,20,8,12],'score':.1}]))
+                with self.assertRaisesRegex(ValueError,'Unknown native category ID'): load_native_predictions(path,rows)
+
+    def test_native_exact_numeric_image_ID_and_ambiguous_stems(self):
+        path=self.root/'native.json'
+        rows=[{'image_path':'images/val/0007.png','member':'original','width':640,'height':512}]
+        entry={'image_id':7,'category_id':1,'bbox':[10,20,8,12],'score':.1}
+        path.write_text(json.dumps([entry]))
+        self.assertEqual(len(load_native_predictions(path,rows)['original']),1)
+        for image_id in ('7','0007',8,True,7.0,None,[]):
+            with self.subTest(image_id=image_id):
+                path.write_text(json.dumps([dict(entry,image_id=image_id)]))
+                with self.assertRaisesRegex(ValueError,'Unknown native image ID'): load_native_predictions(path,rows)
+        with self.assertRaisesRegex(ValueError,'Ambiguous native image ID'):
+            load_native_predictions(path,rows+[dict(rows[0],image_path='images/val/7.jpg',member='other')])
+
+    def test_read_only_preflight_uses_manifest_not_model_or_images(self):
+        out,_=self.run_analysis()
+        # The copied manifest is sufficient even after temporary image cleanup.
+        import shutil
+        shutil.rmtree(self.root/'work')
+        with patch('src.evaluation.phase06.load_person_detector') as load:
+            result=preflight_native_export(out)
+            load.assert_not_called()
+        self.assertTrue(result['inputs_unchanged']);self.assertFalse(result['model_loaded'])
+        self.assertEqual(result['validation_images'],2);self.assertEqual(result['native_predictions'],2)
+        self.assertEqual(latest_native_run(self.root/'reports'),out)
+        path=out/'native_val/predictions.json'
+        entry=json.loads(path.read_text());entry[0]['category_id']=0;path.write_text(json.dumps(entry))
+        with self.assertRaisesRegex(ValueError,'Unknown native category ID'): preflight_native_export(out)
+        path.write_text('[]')
+        self.assertEqual(preflight_native_export(out)['native_predictions'],0)
+        path.unlink()
+        with self.assertRaises(FileNotFoundError): preflight_native_export(out)
+        self.assertIsNone(latest_native_run(self.root/'reports',required=False))
+        with self.assertRaises(FileNotFoundError): latest_native_run(self.root/'reports')
 
     def test_complete_mocked_source_analysis_outputs_no_training(self):
         before=file_digest(self.archive),file_digest(self.checkpoint)

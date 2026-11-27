@@ -25,7 +25,15 @@ def validate():
         archive=make_training_fixture(root/'hit.zip')
         target=make_external_fixture(root/'wisard.zip')
         for mode in ('synthetic_complete','missing_checkpoint'):
-            run_root=output/mode
+            run_root=root/'reports'/mode
+            if mode=='synthetic_complete':
+                prior=run_root/'run_phase06_prior_export'
+                (prior/'native_val').mkdir(parents=True)
+                (prior/'dataset_manifest.json').write_text(json.dumps({'status':'ready','images':[
+                    {'split':'val','disposition':'included','source_member':'source/image_1.png',
+                     'image_path':'images/val/image_1.png','width':640,'height':512}]}))
+                (prior/'native_val/predictions.json').write_text(json.dumps([
+                    {'image_id':'image_1','category_id':1,'bbox':[64,128,128,256],'score':.9}]))
             nb=nbformat.reads(nbformat.writes(source),as_version=4)
             env=nbformat.v4.new_code_cell(
                 f"import os,sys\nos.environ['THERMA_CODE_ROOT']={str(ROOT)!r}\n"
@@ -45,7 +53,8 @@ for item in PATCHES: item.start()
 print('SYNTHETIC VALIDATION ONLY: source/native results mocked; no training or actual model performance.')''')
             nb.cells=[nbformat.v4.new_markdown_cell('# SYNTHETIC TEST — real performance was not measured'),env,*nb.cells[:3],mocks,*nb.cells[3:]]
             if mode=='synthetic_complete':
-                nb.cells.append(nbformat.v4.new_code_cell('''assert PHASE06_SUMMARY['status']=='complete'
+                nb.cells.append(nbformat.v4.new_code_cell('''assert PREVIOUS_NATIVE_RUN.name=='run_phase06_prior_export'
+assert PHASE06_SUMMARY['status']=='complete'
 assert PHASE06_SUMMARY['source_validation_diagnosis']['images']==2
 assert PHASE06_SUMMARY['training_executed'] is False
 assert PHASE06_SUMMARY['wisard_used_for_selection'] is False

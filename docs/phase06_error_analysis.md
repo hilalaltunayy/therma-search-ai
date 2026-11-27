@@ -51,3 +51,19 @@ L veya RGB termal gösterimler radyometrik sıcaklık değildir. Kamera tone map
 `phase06_summary.json`, `error_analysis_report.md`, kaynak val `source_val_predictions.jsonl`, `per_image_errors.csv`, `fn_errors.csv`, `fp_errors.csv`, `image_descriptors.csv`, `gt_object_descriptors.csv`, `protocol_runtime.json`, kaynak manifest/dışlama CSV/YAML, native export, 200 DPI PNG’ler, figür/artifact SHA256 manifestleri ve önerilen Phase 07 JSON/Markdown matrisi otomatik kaydedilir. Tamamlanmayan run’ın kaynak başarı metrikleri null kalır; kısmi dosyalar tanılamadır. Kaynakların before/after hash’leri kontrol edilir.
 
 Paket değerlendirmesi: [phase06_evidence_review.md](phase06_evidence_review.md). Eğitim önerisi: [phase07_experiment_matrix.md](phase07_experiment_matrix.md). Gerçekte çalıştırılan kontroller: [validation_phase06.md](validation_phase06.md). WiSARD zaten incelenmiştir; final genelleme için bağımsız dış holdout ve doğrulanmış negatif sahneler gerekir.
+
+## Native JSON kategori düzeltmesi ve salt-okunur preflight
+
+Ultralytics **8.3.228** `DetectionValidator.init_metrics` COCO olmayan veri için `list(range(1, len(model.names) + 1))` kullanır; `save_one_json` bu eşlemeyi `category_id` alanına yazar. Bu tek sınıflı protokolde native **category_id=1 → dahili Person class_id=0** açıkça eşlenir. Önceki parser'ın category_id=0 beklentisi hatalıydı. Dahili YOLO etiketleri ve fixed tahminler class_id=0 kalır. Bilinmeyen kategori/görüntü kimlikleri, yanlış kimlik türleri ve belirsiz görüntü gövdeleri hata üretir; otomatik sınıf tahmini yapılmaz.
+
+Mevcut başarısız çalışmanın `dataset_manifest.json` ve `native_val/predictions.json` dosyaları varsa, checkpoint/veri/model yüklemeden denetlemek için Notebook 06'nın **yalnız ilk iki kod hücresini** çalıştırın. İkinci hücre rapor kökündeki en yeni uygun export'u salt-okunur doğrular; hata varsa daha eski export'a sessizce geçmez. **Tümünü çalıştır**, bu kontrolden sonra yeni bir değerlendirme yapar. Önceki geçici Colab görüntü dizinleri gerekli değildir.
+
+Yerel eşdeğeri (düzeltilmiş kodla):
+
+```bash
+python -m src.evaluation.native_preflight /path/to/run_phase06_...
+# veya en yeni export için:
+python -m src.evaluation.native_preflight --latest-in /path/to/phase06_error_analysis
+```
+
+Çıktı yalnız stdout'a JSON olarak yazılır; girdi SHA256'ları ve değişmedikleri denetlenir. Bu kontrol önceki P/R/mAP değerlerini yeniden hesaplamaz veya değiştirmez. Boş JSON listesi sıfır tahmin olarak okunabilir; ölçüm doğruluğu veya başarılı native validation kanıtı sayılmaz. Bu düzeltmenin gerçek kontrolleri: [validation_phase06_native_fix.md](validation_phase06_native_fix.md).
