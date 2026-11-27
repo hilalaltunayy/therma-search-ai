@@ -34,5 +34,19 @@
   "repeats": {"initial_exploratory_seed": 42, "confirmation_seeds": [42, 43, 44], "rule": "Repeat shortlisted source-only arms and matched control with paired seeds; report all seed results, mean/std, do not choose the best seed."},
   "checkpoint_rule": "Each run selects best checkpoint using its source validation fitness only; keep all arms and failed/OOM runs in the register.",
   "combination_rule": "Do not combine resolution and augmentation changes in the first block. Any later interaction arm requires a new predeclared comparison.",
-  "external_rule": "WiSARD has already been inspected and is diagnostic development evidence. Final generalization needs new independent missions/flights/sites and verified negative scenes, frozen until model/protocol selection is complete."
+  "external_rule": "WiSARD has already been inspected and is diagnostic development evidence. Final generalization needs new independent missions/flights/sites and verified negative scenes, frozen until model/protocol selection is complete.",
+  "implementation": {
+    "status": "prepared_not_trained",
+    "notebook": "notebooks/07_hit_uav_controlled_training.ipynb",
+    "documentation": "docs/phase07_controlled_training.md",
+    "baseline_evidence_review": "real Drive args/effective/optimizer/manifest read 2026-11-27; no new training",
+    "resolved_common_optimizer": "AdamW",
+    "resolved_lr0": 0.002,
+    "resolved_betas": [
+      0.9,
+      0.999
+    ],
+    "runtime_preflight_required": true,
+    "training_default_enabled": false
+  }
 }
