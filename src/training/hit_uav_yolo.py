@@ -83,13 +83,16 @@ def validate_prepared_dataset(root):
     manifest = json.loads((root/'dataset_manifest.json').read_text())
     if manifest['status'] not in ('validating', 'ready') or manifest['policy'] != POLICY:
         raise ValueError('Veri manifesti hazır değil veya politika uyuşmuyor.')
+    selected = tuple(manifest.get('selected_splits', SPLITS))
+    if selected not in (SPLITS, ('val',)):
+        raise ValueError('Desteklenmeyen seçili split kapsamı.')
     expected_files = set()
-    counts = {s: {'images': 0, 'labels': 0, 'Person': 0, 'person_background_images': 0} for s in SPLITS}
+    counts = {s: {'images': 0, 'labels': 0, 'Person': 0, 'person_background_images': 0} for s in selected}
     for row in manifest['images']:
         if row['disposition'] != 'included':
             continue
         split = row['split']
-        if split not in SPLITS:
+        if split not in selected:
             raise ValueError('Bilinmeyen split.')
         for field, digest in [('image_path', 'image_sha256'), ('label_path', 'label_sha256')]:
             path = (root/row[field]).resolve()
@@ -122,19 +125,24 @@ def validate_prepared_dataset(root):
     return counts
 
 
-def prepare_hit_uav_yolo(archive_path, output_dir, *, code_revision, progress=print):
+def prepare_hit_uav_yolo(archive_path, output_dir, *, code_revision, progress=print, splits=SPLITS):
     """Bütün JSON/görüntüleri doğrula; kopya üret; hatada status=failed ve exception.
 
+    splits=('val',) yalnızca kaynak validation tanılaması içindir; train/test
+    dosyaları okunmaz. Varsayılan eski üç-split davranışı korunur.
     output_dir yeni olmalıdır. Kaynak byte’lar değiştirilmeden kopyalanır. Çıktı
     dosya adları özgün image ID’sinden üretilir; kaynak adları manifestte korunur.
     """
+    selected = tuple(splits)
+    if selected not in (SPLITS, ('val',)):
+        raise ValueError('Yalnızca özgün üç split veya yalnızca val hazırlanabilir.')
     output = Path(output_dir).resolve()
     output.mkdir(parents=True, exist_ok=False)
     manifest = {'status': 'preparing', 'created_utc': datetime.now(timezone.utc).isoformat(),
                 'code_revision': code_revision, 'dataset_version': '1.2.1',
                 'source_url': 'https://zenodo.org/records/7633134',
                 'source_provenance': 'Sürüm ve önceki MD5 doğrulaması kullanıcı beyanı; SHA256 bu çalıştırmada hesaplanır.',
-                'policy': POLICY, 'risks': RISKS, 'images': [], 'splits': {}, 'issues': []}
+                'policy': POLICY, 'risks': RISKS, 'selected_splits': list(selected), 'images': [], 'splits': {}, 'issues': []}
     manifest_path = output/'dataset_manifest.json'
     write_json(manifest_path, manifest)
     try:
@@ -142,7 +150,7 @@ def prepare_hit_uav_yolo(archive_path, output_dir, *, code_revision, progress=pr
                                'sha256': file_digest(Path(archive_path)), 'publisher_checksum_verified_this_run': False}
         with HitUAVArchive(archive_path) as source:
             manifest['normal_json_root'] = source.root
-            for split in SPLITS:
+            for split in selected:
                 data_bytes = source.read(source.root+f'annotations/{split}.json')
                 data = json.loads(data_bytes)
                 parsed = parse_hit_uav(data)
@@ -218,7 +226,8 @@ def prepare_hit_uav_yolo(archive_path, output_dir, *, code_revision, progress=pr
             if row['disposition'] == 'included':
                 groups[row['image_sha256']].append({'split': row['split'], 'source_filename': row['source_filename']})
         manifest['cross_split_exact_byte_groups'] = [v for v in groups.values() if len({r['split'] for r in v}) > 1]
-        yaml = f'path: {json.dumps(str(output))}\ntrain: images/train\nval: images/val\ntest: images/test\nnames:\n  0: Person\n'
+        yaml = f'path: {json.dumps(str(output))}\n'+''.join(
+            f"{split}: {'images/'+split if split in selected else 'null'}\n" for split in SPLITS)+ 'names:\n  0: Person\n'
         (output/'data.yaml').write_text(yaml, encoding='utf-8')
         manifest.update(status='validating', data_yaml_sha256=file_digest(output/'data.yaml'))
         write_json(manifest_path, manifest)

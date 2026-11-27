@@ -1,0 +1,38 @@
+{
+  "status": "proposed_not_executed",
+  "selection_data": "filtered_original_HIT_UAV_validation_only",
+  "training_data": "filtered_original_HIT_UAV_train_only",
+  "forbidden_selection_data": ["WiSARD", "HIT_UAV_test", "future_independent_external_holdout"],
+  "primary_selection_metric": "source_validation_native_mAP50_95",
+  "secondary_diagnostics": ["source_validation_small_GT_recall_at_conf_0.25_IoU_0.50", "source_validation_FP_per_image", "GPU_memory", "inference_latency"],
+  "preconditions": [
+    "Verify real baseline checkpoint, initial pretrained SHA256, dataset policy and train/val membership hashes.",
+    "Read actual args.yaml/effective_train_arguments.json and optimizer_effective.json; resolve optimizer/lr/schedule explicitly rather than letting auto choose a different optimizer across arms.",
+    "Freeze common batch, effective batch/accumulation, FP32/AMP policy, seeds, pretrained initialization, epochs=40, patience=10, augmentations not under test, and evaluation settings before any run.",
+    "Run source-only memory feasibility; if 960 does not fit common batch, lower batch for ALL new arms and rerun the shared control. Never silently lower only the resolution arm.",
+    "Confirm all values inherited from the actual baseline. Skip any augmentation candidate already equal to its control value.",
+    "Obtain user approval before Phase 07 training; this matrix contains no executable training command."
+  ],
+  "common_new_block": {
+    "control_imgsz": 640,
+    "proposed_shared_batch": 4,
+    "batch_is_pending_feasibility_and_approval": true,
+    "epochs": 40,
+    "patience": 10,
+    "seed": 42,
+    "pretrained": true,
+    "precision": "FP32 as original baseline unless all-arm bridge is separately documented",
+    "optimizer_and_lr": "inherit actual resolved baseline optimizer and schedule, not unresolved auto",
+    "policy": "person_only_exclude_zero_raw_and_dontcare_v1"
+  },
+  "arms": [
+    {"id": "P07-C0", "role": "shared_new_control", "compare_to": null, "changed_major_factors": [], "overrides": {}, "interpretation": "Fresh controlled block, not an attribution comparison with the old batch-8 run; batch-4 bridge and actual optimizer equivalence must be documented."},
+    {"id": "P07-R1", "role": "resolution_candidate", "compare_to": "P07-C0", "changed_major_factors": ["resolution_policy"], "overrides": {"imgsz": 960}, "hypothesis": "More network pixels per small source GT may improve localization/recall. Upsampling 640x512 adds no new sensor information. Train/val/inference resolution policy changes together, so claim system-resolution effect, not isolated training benefit.", "cost_note": "Pixel count is approximately 2.25 times 640; measure actual memory/latency."},
+    {"id": "P07-A1", "role": "small_object_scale_augmentation_candidate", "compare_to": "P07-C0", "changed_major_factors": ["scale_augmentation_range"], "overrides": {"scale": 0.25}, "hypothesis": "If actual baseline scale is 0.5, limiting random shrinking may preserve very small source targets; reduced scale diversity may hurt. This is not selected from WiSARD scores."},
+    {"id": "P07-A2", "role": "mosaic_augmentation_candidate", "compare_to": "P07-C0", "changed_major_factors": ["mosaic_probability"], "overrides": {"mosaic": 0.0}, "hypothesis": "Removing mosaic may avoid shrinking sparse source persons; background diversity/regularization may worsen. Only consider if actual control mosaic is enabled."}
+  ],
+  "repeats": {"initial_exploratory_seed": 42, "confirmation_seeds": [42, 43, 44], "rule": "Repeat shortlisted source-only arms and matched control with paired seeds; report all seed results, mean/std, do not choose the best seed."},
+  "checkpoint_rule": "Each run selects best checkpoint using its source validation fitness only; keep all arms and failed/OOM runs in the register.",
+  "combination_rule": "Do not combine resolution and augmentation changes in the first block. Any later interaction arm requires a new predeclared comparison.",
+  "external_rule": "WiSARD has already been inspected and is diagnostic development evidence. Final generalization needs new independent missions/flights/sites and verified negative scenes, frozen until model/protocol selection is complete."
+}
