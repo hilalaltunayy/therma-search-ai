@@ -27,7 +27,9 @@ Son teslim test sayıları ve sabit Colab kod commit'i aşağıda kaydedilir.
 
 - Tüm Python testleri: **144 geçti** (52.964 saniye); yeni Faz 07 alt kümesi **17 geçti**.
 - Notebook 01–06 mevcut doğrulamaları: tamamı geçti. Notebook 04 eğitim çağrıları sentetik mock'tur.
-- Notebook 07: sentetik hazırlık, GPU-yok ve eksik-baseline senaryoları geçti; son CODE_REF sabitlemesinden sonra tekrar doğrulanır.
+- Notebook 07: sentetik hazırlık, GPU-yok ve eksik-baseline senaryoları geçti; son CODE_REF sabitlemesinden sonra tekrar geçti.
 - `compileall src tests` ve `git diff --check`: geçti.
 
 Bazı notebook kernel kapanışlarında ortamın Jupyter imza uyarıları çıktı; başarılı hücre/çıktı assert'leri ve süreç çıkış kodları kontrol edildi. Gerçek Colab OAuth, GPU bellek ölçümü, uzun eğitim, gerçek native/fixed yeni model metrikleri ve gerçek checkpoint ile resume çalıştırılmadı.
+
+Notebook 07 CODE_REF, **78cc680e8e7fb87e4692e91ba73f71846dfd921d** yardımcı kod commit’ine sabitlendi. GitHub’dan ayrı temiz checkout ile bu commit alınarak 17 Faz 07 testi ayrıca geçti (0.796 saniye). Sabitleme takip commit’indedir; notebook kendi commit hash’ine döngüsel referans vermez.
